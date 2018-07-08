@@ -1,0 +1,58 @@
+Pitfalls:
+=========
+
+*	crt0_cart or crt0_cd must always be the first object file
+
+*	When compiling for cart systems the .data section is removed. 
+	Thus you can't use global initialized non const data.
+  
+	Correct:
+	========
+	
+	const int	myint1 = 0xE5E5;
+	int			myint2;
+  
+	void myfunc(void)
+	{
+		myint2 = 0;
+		...
+
+	Incorrect:
+	==========
+	
+	int			myint3 = 0xDEADBEEF;
+	
+	void myfunc(void)
+	{
+		int myint5 = 0xBABEEBAB; // OK!
+		static int myint4 = 0xDEADDEAD; // value of myint4 will be undefined !  
+		test(myint3); // undefined too !  
+		...
+
+*	Always declare global initialized data 'const'
+
+*	When interfacing assembly routines, d2-d7/a2-a6 must be preserved.
+
+*	If you don't want to link libvideo you'll have to declare:
+	volatile WORD	_vbl_flag;
+	somewhere in your code
+	
+*	Memory maps defined in linker scripts may be incorrect
+
+*	In poll_joystick: Auto-Repeat is not available for start & select buttons
+
+*	When declaring table of strings, you must declare the strings const AND THE 
+	ARRAY AS WELL:
+	
+	Incorrect:
+	==========
+	
+	const char *my_table[] = { "1", "2", "3" };
+	
+	Correct:
+	========
+	
+	const char* const my_table[] = { "1", "2", "3" };
+
+*	When using the multitasking library, please remember that each task has a 
+	limited amount of stack, so try to go easy on the stack.

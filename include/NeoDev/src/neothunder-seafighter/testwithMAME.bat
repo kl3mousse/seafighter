@@ -1,6 +1,6 @@
 
 @set MAMEDIR=c:\MAME
-@set PROJECTDIR=%cd%
+@set PROJECTDIR=c:\neogeo\NeoDev\src\neothunder-seafighter
 
 cd %MAMEDIR%
 

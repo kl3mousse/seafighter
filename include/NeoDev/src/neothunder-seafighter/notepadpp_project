@@ -1,0 +1,18 @@
+<NotepadPlus>
+    <Project name="SeaFighter">
+        <File name="main.c" />
+        <File name="gamelogic.c" />
+        <File name="background.c" />
+        <File name="enemy.h" />
+        <File name="bullets.h" />
+        <File name="crt0_cd.s" />
+        <File name="crt0_cart.s" />
+        <File name="C:\neogeo\NeoDev\src\system\common_crt0_cart.s" />
+        <File name="build_Cartridge.bat" />
+        <File name="testwithMAME.bat" />
+        <Folder name="libs">
+            <File name="C:\neogeo\NeoDev\src\libvideo\libvideo.c" />
+            <File name="C:\neogeo\NeoDev\m68k\include\video.h" />
+        </Folder>
+    </Project>
+</NotepadPlus>
