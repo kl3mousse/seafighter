@@ -1,3 +1,14 @@
+# extra files coming from neogeo roms
+*.bin
+*.SPR
+*.FIX
+*.PRG
+*.PCM
+*.Z80
+*.ZIP
+
+# ##### typical excludes for C & C++ projects, thanks GitHub for this :) #####
+
 # Prerequisites
 *.d
 

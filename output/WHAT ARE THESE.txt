@@ -1,0 +1,8 @@
+These directories contain the compilation output. Here's what they are:
+
+cartridge - this one contains the roms needed to run the game on a cartridge (be it in a Neo Geo AES emulator, or in an arcade emulator, such as MAME)
+
+cd - this one contains the files needed to create a Neo Geo CD cd. Note that most of them come directly from the Neo Geo CD version of Puzzle Bobble. The only three files that are replaced by ones obtained via compilation are PB_PROG.PRG, PB_CHR.SPR, and PB_FIX.FIX
+These files can be used to create a Neo Geo CD cd. I simply used ImgBurn to create the ISO file, and it worked right away.
+
+original puzzle bobble ISO (NGCD) - this one contains the original Puzzle Bobble files (Neo Geo CD version). This serves as a backup, in case you accidentally delete the files inside cd\
