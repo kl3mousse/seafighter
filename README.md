@@ -6,7 +6,7 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit.
 
 The aim of that first game is also to buid a portable game dev environment, by simply copy/pasting this repo (idea for later: build a neogeo dev environment template, ready for coding... ?).
 
-*Thanks to the neogeo scene (HPman, Furrtek, dciabrin, ...) for the assets & examples :)*
+*Thanks to the neogeo scene (HPman, Furrtek, dciabrin, Sebastian Mihai...) for the assets & examples :)*
 
 "NEOGEO" is a registered trademark of SNK Playmore Corp. All other company and product names used are trademarks or registered trademarks of their respective owners.
 The contents of this page are not authorized or licensed by SNK Playmore.
