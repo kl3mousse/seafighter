@@ -10,3 +10,10 @@ The aim of that first game is also to buid a portable game dev environment, by s
 
 "NEOGEO" is a registered trademark of SNK Playmore Corp. All other company and product names used are trademarks or registered trademarks of their respective owners.
 The contents of this page are not authorized or licensed by SNK Playmore.
+
+# includes
+
+- NeoDev / Neobitz
+  - version has been modified to map the new project structure (moving the game out of "src" folder, and also trying to get rid off all Win10 PATH and other environment variables
+- DATlib 0.3 by HPman
+  - not included yet...
