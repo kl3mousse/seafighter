@@ -1,11 +1,9 @@
 @REM You only need to modify this value to where you installed your NeoDev dev kit
-@set NEODEV= %cd%\include\NeoDev
-@REM it was c:\neogeo\NeoDev
+@REM  @set NEODEV= %cd%\include\NeoDev
+@REM  @set path=%NEODEV%\m68k\bin;%path%
+
 @set MAMEDIR=c:\MAME
 
-@set path=%NEODEV%\m68k\bin;%path%
-
-@REM Clean
 del %NEODEV%\tmp\*.o
 del *.pal
 del *.o
@@ -23,12 +21,12 @@ del dev_p1.rom
 .\include\NeoDev\m68k\bin\gfxcc -black fix.pal starfield.bmp playership.bmp playership_2.bmp playership_3.bmp bullet.bmp enemies.bmp -o test.spr
 
 @REM Compile CRT0 (C Run Time library)
-.\include\NeoDev\m68k\bin\as -m68000 --register-prefix-optional crt0_cart.s -o %NEODEV%\tmp\crt0_cart.o
+.\include\NeoDev\m68k\bin\as -m68000 --register-prefix-optional .\crt0_cart.s -o %NEODEV%\tmp\crt0_cart.o
 
 @REM Compile program
-.\include\NeoDev\m68k\bin\gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c main.c -o %NEODEV%\tmp\main.o
-.\include\NeoDev\m68k\bin\gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c background.c -o %NEODEV%\tmp\background.o
-.\include\NeoDev\m68k\bin\gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c gamelogic.c -o %NEODEV%\tmp\gamelogic.o
+gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c main.c -o %NEODEV%\tmp\main.o
+gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c background.c -o %NEODEV%\tmp\background.o
+gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c gamelogic.c -o %NEODEV%\tmp\gamelogic.o
 
 @REM "Compile" images
 .\include\NeoDev\m68k\bin\bin2elf enemies.map enemies %NEODEV%\tmp\enemies.o

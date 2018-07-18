@@ -32,7 +32,7 @@ GUID			= 0x1234
 DEBUG_DIPS		= 0x10E000
 LOGO_START		= 0x02	/*;eye catcher (0-common 1-custom 2-off)*/
 
-	.include	"../system/common_crt0_cart.s"
+	.include	"./include/NeoDev/src/system/common_crt0_cart.s"
 
 * Names MUST be 16 characters long
 *           <---------------->
@@ -53,9 +53,7 @@ _sp_config:
 	.long	0xFFFFFFFF
 	.word	0x0364
 	.byte	0x14, 0x13, 0x24, 0x01
-	
+
 	.align	4
 
 	.end
-
-	

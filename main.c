@@ -27,7 +27,7 @@ int lastscore;
 void render_playership(int x, int y, int playermoving)
 {
 	// 200: sprite for back of playership
-	// 201: sprite for back of playership
+	// 201: sprite for front of playership
 	// playership[0] : back, no flame
 	// playership[1] : back, small flame
 	// playership[2] : back, big flame
@@ -48,7 +48,7 @@ void render_playership(int x, int y, int playermoving)
 			if(_vbl_count % 2 == 0)
 				write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[3]);
 			else
-				write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[4]); // should be 4
+				write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[4]);
 		}
 		else
 		{
@@ -82,7 +82,7 @@ void menu()
 		{
 			i = poll_joystick(PORT1, READ_DIRECT);
 			textoutf(13,12, 0, 0, "Sea Fighter");
-			textoutf(5,15, 0, 0, "a neothunder clone");
+			textoutf(5,15, 0, 0, "a NEOTHUNDER clone by kl3mousse");
 			textoutf(11,18, 0, 0, "Press B to start!");
 
 			if(lastscore >= 31)
@@ -116,7 +116,7 @@ void selectPlayerShip()
 		do
 		{
 			i = poll_joystick(PORT1, READ_DIRECT);
-			textoutf(13,12, 0, 0, "Select your ship!");
+			textoutf(13,12, 0, 0, "Select your ship!!");
 			textoutf(11,18, 0, 0, "Press A to start!");
 
 
@@ -161,7 +161,7 @@ void get_ready()
 		_vbl_count = 0;
 		do
 		{
-			textoutf(13,12, 0, 0, "Get ready!");
+			textoutf(13,12, 0, 0, "Get ready my friend!");
 			textoutf(17,13, 0, 0, "%d", 5 - _vbl_count/40);
 			wait_vbl();
 

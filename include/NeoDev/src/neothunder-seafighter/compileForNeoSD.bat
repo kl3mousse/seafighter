@@ -1,1 +1,0 @@
-NeoBuilder -n seafighter -m klemousse -y 2018 -g Shooter -s 999 roms\seafighter.zip
