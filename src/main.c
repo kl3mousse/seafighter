@@ -90,7 +90,7 @@ void menu()
 		do
 		{
 			i = poll_joystick(PORT1, READ_DIRECT);
-			textoutf(9,12, 0, 0, "Sea Fighter 0.01.004");
+			textoutf(9,12, 0, 0, "Sea Fighter 0.01.005");
 			textoutf(5,15, 0, 0, "a NEOTHUNDER clone by kl3mousse");
 			textoutf(11,18, 0, 0, "Press B to start!");
 
@@ -315,7 +315,7 @@ void game()
 		if( lastscore >= 32 )
 		{
 			// win!
-			textoutf(5,3, 0, 0, "Grats, you beat the game!");
+			textoutf(5,3, 0, 0, "Congrats, you beat the game!");
 			// keep writing on screen for a bit longer
 			if(lastscore == 33)
 			{

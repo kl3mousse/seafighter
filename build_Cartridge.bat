@@ -24,12 +24,12 @@ del dev_p1.rom
 .\include\NeoDev\m68k\bin\gfxcc -black fix.pal gfx\starfield.bmp gfx\playership.bmp gfx\playership_2.bmp gfx\playership_3.bmp gfx\bullet.bmp gfx\enemies.bmp -o test.spr
 
 @REM Compile CRT0 (C Run Time library)
-.\include\NeoDev\m68k\bin\as -m68000 --register-prefix-optional .\crt0_cart.s -o %NEODEV%\tmp\crt0_cart.o
+.\include\NeoDev\m68k\bin\as -m68000 --register-prefix-optional .\src\crt0_cart.s -o %NEODEV%\tmp\crt0_cart.o
 
 @REM Compile program
-gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c main.c -o %NEODEV%\tmp\main.o
-gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c background.c -o %NEODEV%\tmp\background.o
-gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c gamelogic.c -o %NEODEV%\tmp\gamelogic.o
+gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\main.c -o %NEODEV%\tmp\main.o
+gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\background.c -o %NEODEV%\tmp\background.o
+gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\gamelogic.c -o %NEODEV%\tmp\gamelogic.o
 
 @REM "Compile" images
 .\include\NeoDev\m68k\bin\bin2elf gfx\enemies.map enemies %NEODEV%\tmp\enemies.o
@@ -38,12 +38,14 @@ gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -
 .\include\NeoDev\m68k\bin\bin2elf gfx\playership_2.map playership_2 %NEODEV%\tmp\playership_2.o
 .\include\NeoDev\m68k\bin\bin2elf gfx\playership_3.map playership_3 %NEODEV%\tmp\playership_3.o
 .\include\NeoDev\m68k\bin\bin2elf gfx\bullet.map bullet %NEODEV%\tmp\bullet.o
+
 @REM compile palettes
 .\include\NeoDev\m68k\bin\bin2elf test.pal palettes %NEODEV%\tmp\palettes.o
 
-
 @REM Link
 .\include\NeoDev\m68k\bin\gcc -L%NEODEV%\m68k\lib -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -Wl,-T%NEODEV%\src\system\neocart.x %NEODEV%\tmp\crt0_cart.o %NEODEV%\tmp\main.o %NEODEV%\tmp\background.o %NEODEV%\tmp\gamelogic.o %NEODEV%\tmp\enemies.o %NEODEV%\tmp\palettes.o %NEODEV%\tmp\starfield.o %NEODEV%\tmp\playership.o %NEODEV%\tmp\playership_2.o %NEODEV%\tmp\playership_3.o %NEODEV%\tmp\bullet.o -linput -lvideo -lc -lgcc -o test.o
+
+pause
 
 @REM Pad program rom
 .\include\NeoDev\m68k\bin\objcopy --gap-fill=0x00 --pad-to=0x20000 -R .data -O binary test.o dev_p1.rom
