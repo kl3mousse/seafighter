@@ -10,7 +10,8 @@
 # MAME excludes
 mame64.exe
 mame64.sym
-tools/MAME/nvram/
+/tools/MAME/cfg
+/tools/MAME/nvram
 
 ##### typical excludes for C & C++ projects, thanks GitHub for this :) #####
 
@@ -46,3 +47,5 @@ tools/MAME/nvram/
 # *.exe
 *.out
 *.app
+tools/MAME/cfg/puzzledp.cfg
+tools/MAME/nvram/puzzledp/saveram
