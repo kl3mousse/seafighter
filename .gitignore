@@ -7,6 +7,10 @@
 *.Z80
 *.ZIP
 
+# MAME excludes
+mame64.exe
+mame64.sym
+
 # ##### typical excludes for C & C++ projects, thanks GitHub for this :) #####
 
 # Prerequisites

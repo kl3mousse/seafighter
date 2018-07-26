@@ -24,7 +24,7 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
 
 # latest updates
 - added "gfx" folder to store all bitmaps separately
-- MAME with NeoGeo Unibios added to be able to testing
+- MAME with NeoGeo Unibios added to be able to test
 - moved NeoDev as a library
 
 "NEOGEO" is a registered trademark of SNK Playmore Corp. All other company and product names used are trademarks or registered trademarks of their respective owners.
