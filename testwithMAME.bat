@@ -1,5 +1,5 @@
 
-@set MAMEDIR=c:\MAME
+@set MAMEDIR=%cd%\tools\MAME
 @set PROJECTDIR=%cd%
 
 cd %MAMEDIR%
@@ -17,6 +17,6 @@ ren roms\puzzledp\202-p1.bin 202-p1.p1
 ren roms\puzzledp\202-s1.bin 202-s1.s1
 ren roms\puzzledp\202-v1.bin 202-v1.v1
 
-mame64 neogeo puzzledp
+mame64 -bios unibios32 puzzledp
 
 cd %PROJECTDIR%

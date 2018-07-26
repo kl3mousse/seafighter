@@ -22,49 +22,58 @@ extern TILEMAP	playership[];
 DWORD i;
 DWORD joy2;
 
+int p1ship; // 0, 1, 2
 int lastscore;
 
 void render_playership(int x, int y, int playermoving)
 {
 	// 200: sprite for back of playership
 	// 201: sprite for front of playership
+	// SHIP 1
 	// playership[0] : back, no flame
 	// playership[1] : back, small flame
 	// playership[2] : back, big flame
 	// playership[3] : front, standard
 	// playership[4] : front, reverse turbo
+	// SHIP 2
+	// playership[5] : back, no flame
+	// playership[6] : back, small flame
+	// playership[7] : back, big flame
+	// playership[8] : front, standard
+	// playership[9] : front, reverse turbo
 
+  int p1shipSpriteAddress = p1ship * 5;
 
 	set_current_sprite(201);
-	write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[3]);
+	write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[3 + p1shipSpriteAddress]);
 
 	set_current_sprite(200);
 	if(playermoving == 1)
 	{
 		if (joy2 & JOY_LEFT)
 		{
-			write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[0]);
+			write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[0 + p1shipSpriteAddress]);
 			set_current_sprite(201);
 			if(_vbl_count % 2 == 0)
-				write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[3]);
+				write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[3 + p1shipSpriteAddress]);
 			else
-				write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[4]);
+				write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[4 + p1shipSpriteAddress]);
 		}
 		else
 		{
 			if(_vbl_count % 2 == 0)
-				write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[2]);
+				write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[2 + p1shipSpriteAddress]);
 			else
-				write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[0]);
+				write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[0 + p1shipSpriteAddress]);
 		}
 	}
 	else
 	{
 
 		if(_vbl_count % 2 == 0)
-			write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[1]);
+			write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[1 + p1shipSpriteAddress]);
 		else
-			write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[0]);
+			write_sprite_data(x, y, 15, 255, 1, 1, (const PTILEMAP)&playership[0 + p1shipSpriteAddress]);
 	}
 
 	//change_sprite_pos(200, x, y, 1);
@@ -81,7 +90,7 @@ void menu()
 		do
 		{
 			i = poll_joystick(PORT1, READ_DIRECT);
-			textoutf(13,12, 0, 0, "Sea Fighter");
+			textoutf(9,12, 0, 0, "Sea Fighter 0.01.004");
 			textoutf(5,15, 0, 0, "a NEOTHUNDER clone by kl3mousse");
 			textoutf(11,18, 0, 0, "Press B to start!");
 
@@ -321,7 +330,8 @@ void game()
 
 int	main(void)
 {
-	char* author = "Sebastian Mihai, 2011";
+	char* author = "kl3mousse, 2018";
+	p1ship = 1; //0 or 1 or 2
 	while(1)
 	{
 		menu();

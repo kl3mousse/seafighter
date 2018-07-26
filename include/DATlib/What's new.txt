@@ -1,0 +1,164 @@
+Version 0.3 updates:
+====================
+
+Introduced color streams. See documentation/demo.
+Added functions/tools package for fix display handling.
+Added VBlank callback function support.
+
+
+Tools related
+-------------
+
+- Buildchar: Can now process and output fix data.
+- Buildchar: X-flipped autoanim tiles are now properly detected & optimized.
+- Buildchar/animator: Various output format changes.
+- Misc glitch/crash fixes across tools.
+
+
+Misc code related
+-----------------
+
+- Added a buffer for fix commands.
+- Functions clearing sprites no longer resets the shrink values.
+- Added alternate IRQ safe versions of functions when necessary.
+- Fixed debug dip 2-3 scale.
+- New functions: jobMeterSetup2
+                 clearFixLayer2
+                 clearFixLayer3
+                 sprintf2
+                 sprintf3
+                 fixPrint2
+                 fixPrint3
+                 fixPrint4
+                 fixPrintf1
+                 fixPrintf2
+                 fixPrintf3
+
+
+aSprite related
+---------------
+
+- Palette data can now be accessed through spriteInfo structure.
+- Fixed 1px offset when X flipped and/or Y flipped.
+- Ability to initialize without issuing a sprite clear.
+- Flags are now passed on upon initialization.
+- Current animation#, step#, and repeats# are now properly tracked.
+- Introduced alternate coordinates mode (strict coordinates).
+- New functions: aSpriteSetAnim2
+                 aSpriteSetStep
+                 aSpriteSetStep2
+                 aSpriteSetAnimStep
+                 aSpriteSetAnimStep2
+
+
+spritePool related
+------------------
+
+- New function:  spritePoolDrawList2
+
+
+scroller related
+----------------
+
+- Palette data can now be accessed through scrollerInfo structure.
+- Rewrote code, improved performance.
+- scroller functions now updates tilemap data on a per tile basis.
+
+
+picture related
+---------------
+
+- Palette data can now be accessed through pictureInfo structure.
+
+
+
+
+
+Version 0.2 updates:
+====================
+
+Introduced sprite pools, check documentation.
+Introduced a new sprite framing tool.
+
+
+Tools related
+-------------
+
+- Fixed various glitches/crashes/file locks across tools.
+- Buildchar: tool now requires to specify input xml file. Added config options, see doc.
+             This allow to alleviate char processing time by splitting assets into multiple files.
+- Buildchar: it is now possible to mix auto4 and auto8 tiles on the same file.
+- Buildchar: when processing sprites, data not used in frames is now ignored.
+
+
+Misc code related
+-----------------
+
+- Switched draw commands tables addressing mode (from index to pointer).
+  This changes nothing except if you made custom code to write in these tables.
+- Added draw buffers usage meter (dip 2-3).
+- Squeezed out some more CPU cycles here and there.
+- Renamed a few element for consistency:
+	wait_vblank()	=>	waitVBlank()
+	Scroller	=>	scroller
+	Picture		=>	picture
+- Revamped timer interrupt code:
+	* Runs faster
+	* Should now retain effect on dropped frames.
+	* Now uses the USP register, no more OS writing for you.
+	* Changed data format for rasters info, check doc.
+	* Removed the default raster data tables, allocate your own tables if you use timer interrupt.
+	* Can now updates two values per IRQ trigger.
+
+
+aSprite related
+---------------
+
+- Fixed issue where aSprite wouldn't initialize properly under certain conditions.
+- Added aSpriteHide() & aSpriteShow() methods.
+
+
+
+
+
+Version 0.1 updates:
+====================
+
+
+Documentation
+-------------
+
+- Redone documentation. Better organization, more infos.
+
+
+Tools related
+-------------
+
+- BuildChar: revamped color conversion and added dark bit support.
+- BuildChar: dummy tiles inserted to align auto animation tiles are now reused to fit data when possible.
+- Animator: improved interface for better animation edits.
+- Animator: improved animation playback. Animation speed should be much more faithful to the real thing.
+
+
+General DATlib usage related
+----------------------------
+- initGfx() no longer sets up the job meter.
+- Introduced jobMeterSetup() to set up job meter.
+- Now using debug dips, see documentation for full infos.
+- Added files required for CD systems builds.
+
+
+Picture related
+---------------
+
+- Picture handling functions rewritten in asm. Improved speed across the board.
+- Added pictureHide and pictureShow functions.
+
+
+aSprite related
+---------------
+
+- aSprite handling functions rewritten in asm. Improved speed across the board.
+- aSprite now handles variable tile width frames.
+- aSpriteAnimate() will no longer issue a tilemap data rewrite when consecutive animation steps are using the same frame.
+- Adjusted aSpriteSetAnim() behavior, see doc for full info.
