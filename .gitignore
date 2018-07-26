@@ -10,8 +10,9 @@
 # MAME excludes
 mame64.exe
 mame64.sym
+tools/MAME/nvram/
 
-# ##### typical excludes for C & C++ projects, thanks GitHub for this :) #####
+##### typical excludes for C & C++ projects, thanks GitHub for this :) #####
 
 # Prerequisites
 *.d
