@@ -23,6 +23,8 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
 - compileForNeoSD.bat will create a rom in NEO format in order to load it into a NeoSD card
 
 # latest updates
+- added SRC folder for programs
+- removed all files related to NeoGeo CD. Focusing on AES/MVS only.
 - added "gfx" folder to store all bitmaps separately
 - MAME with NeoGeo Unibios added to be able to test
 - moved NeoDev as a library
