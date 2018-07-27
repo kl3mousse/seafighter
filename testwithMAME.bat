@@ -2,6 +2,10 @@
 @set MAMEDIR=%cd%\tools\MAME
 @set PROJECTDIR=%cd%
 
+@REM Copy all game roms to MAME (should be six .bin files)
+del %MAMEDIR%\roms\puzzledp\*.bin
+copy output\cartridge\*.bin %MAMEDIR%\roms\puzzledp\
+
 cd %MAMEDIR%
 
 del roms\puzzledp\*.c*

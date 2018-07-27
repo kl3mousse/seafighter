@@ -1,8 +1,7 @@
 # extra files coming from neogeo roms
-*.bin
-*.SPR
-*.FIX
-*.PRG
+# *.bin
+# *.SPR
+# *.PRG
 *.PCM
 *.Z80
 *.ZIP
@@ -21,7 +20,7 @@ mame64.sym
 # Compiled Object files
 *.slo
 *.lo
-*.o
+# *.o
 *.obj
 
 # Precompiled Headers
