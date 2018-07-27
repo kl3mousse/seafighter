@@ -6,6 +6,9 @@
 *.Z80
 *.ZIP
 
+# temp doc files
+*.pptx
+
 # MAME excludes
 mame64.exe
 mame64.sym
@@ -39,7 +42,7 @@ mame64.sym
 # Compiled Static libraries
 *.lai
 *.la
-*.a
+# *.a
 *.lib
 
 # Executables

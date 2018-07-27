@@ -2,11 +2,9 @@
 CLS
 
 @REM You only need to modify this value to where you installed your NeoDev dev kit
-@REM  @set NEODEV= %cd%\include\NeoDev
-@REM  @set path=%NEODEV%\m68k\bin;%path%
-
 @set MAMEDIR=%cd%\tools\MAME
 
+@REM cleaning potential temporary files in case previous Build was interrupted
 del %NEODEV%\tmp\*.o
 del *.pal
 del *.o
@@ -19,7 +17,6 @@ del dev_p1.rom
 
 @REM Generate palettes and fix
 .\include\NeoDev\m68k\bin\fixcnv gfx\fix_font.bmp -o test.fix -pal fix.pal
-
 .\include\NeoDev\m68k\bin\gfxcc -black fix.pal gfx\starfield.bmp gfx\playership.bmp gfx\playership_2.bmp gfx\playership_3.bmp gfx\bullet.bmp gfx\enemies.bmp -o test.spr
 
 @REM Compile CRT0 (C Run Time library)

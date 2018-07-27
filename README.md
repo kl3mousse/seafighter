@@ -29,5 +29,8 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
 - MAME with NeoGeo Unibios added to be able to test
 - moved NeoDev as a library
 
+# build cartridge process
+![Build process](doc/build_process.png?raw=true "Build process")
+
 "NEOGEO" is a registered trademark of SNK Playmore Corp. All other company and product names used are trademarks or registered trademarks of their respective owners.
 The contents of this page are not authorized or licensed by SNK Playmore.
