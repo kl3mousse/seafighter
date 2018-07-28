@@ -90,7 +90,7 @@ void menu()
 		do
 		{
 			i = poll_joystick(PORT1, READ_DIRECT);
-			textoutf(9,12, 0, 0, "Sea Fighter 0.01.005");
+			textoutf(9,12, 0, 0, "Sea Fighter 0.01.006");
 			textoutf(5,15, 0, 0, "a NEOTHUNDER clone by kl3mousse");
 			textoutf(11,18, 0, 0, "Press B to start!");
 
