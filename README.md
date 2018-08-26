@@ -23,6 +23,9 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
 # build cartridge process
 
 ![Build process](./doc/build_process.PNG?raw=true "Build process")
+- Black circles: source files
+- Blue/Green circles: temp files created during BUILD/LINKING build_process
+- Purple circles: Rom files for MAME
 
 # includes and other dependancies
 - NeoDev / NeoBitz
