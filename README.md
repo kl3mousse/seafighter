@@ -4,7 +4,7 @@ one more neogeo homebrew... an **horizontal shooter** you can play on MAME neoge
 I'm glad you have found this repo :) note that this is work in progress.
 For now I'm trying to get basic things sorted out, starting with a good dev kit, that can be easily reused for another project.
 
-*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ...) for the assets & examples :)*
+*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Vasiliy Familiya...) for the assets & examples :)*
 
 # key programs
 - run_me_first.bat: will setup Windows PATH to be able to access compilers and libraries for your C/ASM code into ROMs
@@ -13,6 +13,7 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
 - compileForNeoSD.bat will create a rom in NEO format in order to load it into a NeoSD card
 
 # latest updates
+- added XML content for MAME (thanks to Vasiliy Familiya)
 - added SRC folder for programs
 - removed all files related to NeoGeo CD. Focusing on AES/MVS only.
 - added "gfx" folder to store all bitmaps separately
