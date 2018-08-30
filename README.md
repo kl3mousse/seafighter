@@ -13,6 +13,7 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
 - compileForNeoSD.bat will create a rom in NEO format in order to load it into a NeoSD card
 
 # latest updates
+- ability for player 1 to choose fighter when game starts
 - added XML content for MAME (thanks to Vasiliy Familiya)
 - added SRC folder for programs
 - removed all files related to NeoGeo CD. Focusing on AES/MVS only.
