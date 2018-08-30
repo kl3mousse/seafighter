@@ -18,11 +18,16 @@ extern PALETTE	palettes[];
 
 extern TILEMAP	playership[];
 
+
+#define NB_SHIP_TYPES 3 //number of types of ships. Must match with sprites.
+
 // used to read in the joystick
 DWORD i;
 DWORD joy2;
 
-int p1ship; // 0, 1, 2
+int p1ship_type; // 0, 1, 2
+int p1shipSpriteAddress;
+
 int lastscore;
 
 void render_playership(int x, int y, int playermoving)
@@ -42,7 +47,7 @@ void render_playership(int x, int y, int playermoving)
 	// playership[8] : front, standard
 	// playership[9] : front, reverse turbo
 
-  int p1shipSpriteAddress = p1ship * 5;
+  p1shipSpriteAddress = p1ship_type * 5;
 
 	set_current_sprite(201);
 	write_sprite_data(x+16, y, 15, 255, 1, 1, (const PTILEMAP)&playership[3 + p1shipSpriteAddress]);
@@ -118,43 +123,52 @@ void menu()
 
 void selectPlayerShip()
 {
-		setpalette(0, 2, (const PPALETTE)&palettes);
+    setpalette(0, 2, (const PPALETTE)&palettes);
 		clear_fix();
 		clear_spr();
 		_vbl_count = 0;
 		do
 		{
-			i = poll_joystick(PORT1, READ_DIRECT);
+			i = poll_joystick(PORT1, READ_BIOS_CHANGE);
+
 			textoutf(13,12, 0, 0, "Select your ship!!");
-			textoutf(11,18, 0, 0, "Press A to start!");
+			textoutf(4,14, 0, 0, "Press A to start! Up/Down to change ship");
 
-
+      if ((i & JOY_UP))
+      {       // PressUp = next ship for Player 1
+        p1ship_type += 1;
+        if (p1ship_type == NB_SHIP_TYPES) p1ship_type = 0;
+        p1shipSpriteAddress = p1ship_type * 5;
+      }
+      else
+      {
+        if ((i & JOY_DOWN))
+        {       // PressDown = prev. ship for Player 1
+          p1ship_type -= 1;
+          if (p1ship_type == -1) p1ship_type = NB_SHIP_TYPES - 1;
+          p1shipSpriteAddress = p1ship_type * 5;
+        }
+      }
 
 			set_current_sprite(279);
 			if(_vbl_count % 2 == 0)
-				write_sprite_data(64, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[0]);
+				write_sprite_data(64, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[0 + p1shipSpriteAddress]);
 			else
-				write_sprite_data(64, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[2]);
+				write_sprite_data(64, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[2 + p1shipSpriteAddress]);
 			set_current_sprite(280);
-			write_sprite_data(80, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[3]);
+			write_sprite_data(80, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[3 + p1shipSpriteAddress]);
 
-			set_current_sprite(281);
-			if(_vbl_count % 2 == 0)
-				write_sprite_data(128, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[0+5]);
-			else
-				write_sprite_data(128, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[2+5]);
-			set_current_sprite(282);
-			write_sprite_data(144, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[3+5]);
-
-			set_current_sprite(283);
+/*			set_current_sprite(283);
 			if(_vbl_count % 2 == 0)
 				write_sprite_data(196, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[0+10]);
 			else
 				write_sprite_data(196, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[2+10]);
 			set_current_sprite(284);
 			write_sprite_data(212, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[3+10]);
+*/
+      wait_vbl();
 
-wait_vbl();
+
 		}while(!(i & JOY_A));
 
 		_vbl_count = 0;
@@ -331,7 +345,7 @@ void game()
 int	main(void)
 {
 	char* author = "kl3mousse, 2018";
-	p1ship = 1; //0 or 1 or 2
+	p1ship_type = 1; //0 or 1 or 2
 	while(1)
 	{
 		menu();

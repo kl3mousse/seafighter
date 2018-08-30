@@ -8,6 +8,7 @@
 
 # temp doc files
 *.pptx
+samples
 
 # MAME excludes
 mame64.exe
