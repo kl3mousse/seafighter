@@ -261,6 +261,8 @@ void game()
 	initialize_bullets();
 	initialize_enemies();
 
+  send_sound_command(ADPCM_JEROEN_TEL___CYBERNOID_II);
+
 	while(1)
 	{
 
