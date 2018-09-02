@@ -1,10 +1,8 @@
-/*
-
+/***********************************************************************************
 		SEA FIGHTER
 		a clone of NEO THUNDER (Sebastian Mihai, 2011 (http://www.sebastianmihai.com))
-
 		"Long live the Neogeo!"
-*/
+***********************************************************************************/
 
 #include <stdlib.h>
 #include <video.h>
@@ -12,21 +10,32 @@
 #include "background.h"
 #include "bullets.h"
 #include "enemy.h"
+#include "sound.h"
 
 // pallete information
 extern PALETTE	palettes[];
-
 extern TILEMAP	playership[];
-
 
 #define NB_SHIP_TYPES 3 //number of types of ships. Must match with sprites.
 
-// used to read in the joystick
-DWORD i;
-DWORD joy2;
+struct game
+  {
+     int nbPlayers; // 1 or 2 players
+     int mode;      // 0 = Logo screen(s)
+                    // 1 = Main Menu
+                    // 2 = Attract / demo mode
+                    // 3 = Playing
+                    // 4 = Game over
+  };
 
+// GLOBALS
+DWORD i; //joy1
+DWORD joy2;
+struct game seaFighter;
 int p1ship_type; // 0, 1, 2
 int p1shipSpriteAddress;
+int p2ship_type; // 0, 1, 2
+int p2shipSpriteAddress;
 
 int lastscore;
 
@@ -95,9 +104,11 @@ void menu()
 		do
 		{
 			i = poll_joystick(PORT1, READ_DIRECT);
+      joy2 = poll_joystick(PORT2, READ_DIRECT);
+
 			textoutf(9,12, 0, 0, "Sea Fighter 0.01.006");
 			textoutf(5,15, 0, 0, "a NEOTHUNDER clone by kl3mousse");
-			textoutf(11,18, 0, 0, "Press B to start!");
+			textoutf(11,18, 0, 0, "Press P1 to start!");
 
 			if(lastscore >= 31)
 				textoutf(0,27, 0, 0, "Last attempt: COMPLETED GAME!!");
@@ -114,7 +125,9 @@ void menu()
 			set_current_sprite(380);
 			write_sprite_data(148, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[3]);
 
-		}while(!(i & JOY_B));
+		}while(!(i & JOY_START)*!(joy2 & JOY_START));
+
+    if(joy2 & JOY_START) seaFighter.nbPlayers = 2; else seaFighter.nbPlayers = 1; //if P2 pressed then set to 2 players. 1 otherwise.
 
 		_vbl_count = 0;
 		clear_fix();
@@ -139,6 +152,7 @@ void selectPlayerShip()
         p1ship_type += 1;
         if (p1ship_type == NB_SHIP_TYPES) p1ship_type = 0;
         p1shipSpriteAddress = p1ship_type * 5;
+        send_sound_command(ADPCM_BASS2);
       }
       else
       {
@@ -147,6 +161,7 @@ void selectPlayerShip()
           p1ship_type -= 1;
           if (p1ship_type == -1) p1ship_type = NB_SHIP_TYPES - 1;
           p1shipSpriteAddress = p1ship_type * 5;
+          send_sound_command(ADPCM_BASS2);
         }
       }
 
@@ -158,16 +173,18 @@ void selectPlayerShip()
 			set_current_sprite(280);
 			write_sprite_data(80, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[3 + p1shipSpriteAddress]);
 
-/*			set_current_sprite(283);
-			if(_vbl_count % 2 == 0)
-				write_sprite_data(196, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[0+10]);
-			else
-				write_sprite_data(196, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[2+10]);
-			set_current_sprite(284);
-			write_sprite_data(212, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[3+10]);
-*/
-      wait_vbl();
+      if(seaFighter.nbPlayers==2)
+      {
+			     set_current_sprite(283);
+			        if(_vbl_count % 2 == 0)
+				          write_sprite_data(196, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[0+10]);
+			        else
+				          write_sprite_data(196, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[2+10]);
+			        set_current_sprite(284);
+			        write_sprite_data(212, 160, 15, 255, 1, 1, (const PTILEMAP)&playership[3+10]);
+      };
 
+      wait_vbl();
 
 		}while(!(i & JOY_A));
 
@@ -344,11 +361,17 @@ void game()
 
 int	main(void)
 {
-	char* author = "kl3mousse, 2018";
-	p1ship_type = 1; //0 or 1 or 2
+  char* author = "kl3mousse, 2018";
+
+  struct game seaFighter;
+
+  seaFighter.mode = 0;
+	p1ship_type = 0; //0 or 1 or 2
+  p2ship_type = 1; //0 or 1 or 2
+
 	while(1)
 	{
-		menu();
+    menu(); // press P1 or P2 start button
 		selectPlayerShip();
 		get_ready();
 		game();

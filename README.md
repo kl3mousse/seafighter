@@ -4,7 +4,7 @@ one more neogeo homebrew... an **horizontal shooter** you can play on MAME neoge
 I'm glad you have found this repo :) note that this is work in progress.
 For now I'm trying to get basic things sorted out, starting with a good dev kit, that can be easily reused for another project.
 
-*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Vasiliy Familiya...) for the assets & examples :)*
+*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Vasiliy Familiya, Smkdan...) for the assets & examples :)*
 
 # key programs
 - run_me_first.bat: will setup Windows PATH to be able to access compilers and libraries for your C/ASM code into ROMs
@@ -12,7 +12,9 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
 - testwithMAME.bat will launch your ROM with MAME
 - compileForNeoSD.bat will create a rom in NEO format in order to load it into a NeoSD card
 
-# latest updates
+# latest updates (latest updates first)
+- included own Sound roms (M1/V1) made with Neo Sound Builder: soon I can get rid off proprietary code from Puzzle De Pon
+- included Neo Sound Builder tool (from NeoBitz)
 - ability for player 1 to choose fighter when game starts
 - added XML content for MAME (thanks to Vasiliy Familiya)
 - added SRC folder for programs
@@ -27,11 +29,13 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
 - Black circles: source files
 - Blue/Green circles: temp files created during BUILD/LINKING build_process
 - Purple circles: Rom files for MAME
+(need to add sound building process)
 
 # includes and other dependancies
 - NeoDev / NeoBitz
   - gcc version 2.95.2
   - version has been modified to map the new project structure (moving the game out of "src" folder, and also trying to get rid off all Win10 PATH and other environment variables
+- Neo Sound Builder v008 by NeoBitz
 - DATlib 0.3 by HPman (included in subdirectories, not yet in game)
 - MAME v0.197 (http://mamedev.org/) ****soon
 - Unibios 3.2 (http://unibios.free.fr)

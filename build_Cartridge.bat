@@ -26,6 +26,7 @@ del dev_p1.rom
 gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\main.c -o %NEODEV%\tmp\main.o
 gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\background.c -o %NEODEV%\tmp\background.o
 gcc -I%NEODEV%\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\gamelogic.c -o %NEODEV%\tmp\gamelogic.o
+pause
 
 @REM "Compile" images
 .\include\NeoDev\m68k\bin\bin2elf gfx\enemies.map enemies %NEODEV%\tmp\enemies.o
@@ -61,7 +62,7 @@ copy test.fix 202-s1.bin
 @REM into the current directory
 copy puzzledepon_original_roms\202-m1.bin .\
 copy puzzledepon_original_roms\202-v1.bin .\
-.\include\NeoDev\m68k\bin\romwak /p 202-v1.bin 202-v1.bin 512 255
+@REM .\include\NeoDev\m68k\bin\romwak /p 202-v1.bin 202-v1.bin 512 255
 
 @REM Copy all game roms to output directory
 del output\cartridge\*.bin
