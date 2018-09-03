@@ -11,6 +11,7 @@
 #include "bullets.h"
 #include "enemy.h"
 #include "sound.h"
+#include "mylib.h"
 
 // pallete information
 extern PALETTE	palettes[];
@@ -106,7 +107,7 @@ void menu()
 			i = poll_joystick(PORT1, READ_DIRECT);
       joy2 = poll_joystick(PORT2, READ_DIRECT);
 
-			textoutf(9,12, 0, 0, "Sea Fighter 0.01.006");
+			textoutf(9,12, 0, 0, "Sea Fighter 0.01.00%d", gameversion());
 			textoutf(5,15, 0, 0, "a NEOTHUNDER clone by kl3mousse");
 			textoutf(11,18, 0, 0, "Press P1 to start!");
 
