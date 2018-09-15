@@ -4,7 +4,9 @@ one more neogeo homebrew... an **horizontal shooter** you can play on MAME neoge
 I'm glad you have found this repo :) note that this is work in progress.
 For now I'm trying to get basic things sorted out, starting with a good dev kit, that can be easily reused for another project.
 
-*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Vasiliy Familiya, Smkdan...) for the assets & examples :)*
+Contributions and enhancements are welcomed. Please create a pull request.
+
+*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Vasiliy Familiya, Smkdan, Chris Covell...) for the assets & examples :)*
 
 # key programs
 - run_me_first.bat: will setup Windows PATH to be able to access compilers and libraries for your C/ASM code into ROMs
@@ -13,6 +15,7 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
 - compileForNeoSD.bat will create a rom in NEO format in order to load it into a NeoSD card
 
 # latest updates (latest updates first)
+- added 7zip and a zip version of MAME64 so that MAME is included. Now possible to test just by cloning the Git repo (dont forget to excecute 'run_me_first').
 - included own Sound roms (M1/V1) made with Neo Sound Builder: soon I can get rid off proprietary code from Puzzle De Pon
 - included Neo Sound Builder tool (from NeoBitz)
 - ability for player 1 to choose fighter when game starts
@@ -37,10 +40,11 @@ For now I'm trying to get basic things sorted out, starting with a good dev kit,
   - version has been modified to map the new project structure (moving the game out of "src" folder, and also trying to get rid off all Win10 PATH and other environment variables
 - Neo Sound Builder v008 by NeoBitz
 - DATlib 0.3 by HPman (included in subdirectories, not yet in game)
-- MAME v0.197 (http://mamedev.org/) ****soon
+- MAME v0.197 (http://mamedev.org/)
 - Unibios 3.2 (http://unibios.free.fr)
 - NEO THUNDER modified game code (http://sebastianmihai.com/main.php?t=22)
 - Neo Builder v1.06 (https://www.terraonion.com/en/products)
+- 7zip (to Zipbin files in a ZIP rom, then convert into NeoSD format)
 
 "NEOGEO" is a registered trademark of SNK Playmore Corp. All other company and product names used are trademarks or registered trademarks of their respective owners.
 The contents of this page are not authorized or licensed by SNK Playmore.

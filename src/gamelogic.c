@@ -1,6 +1,7 @@
 #include <video.h>
 #include "bullets.h"
 #include "enemy.h"
+#include "sound.h"
 
 // ==== BULLET DEFINITIONS ====
 
@@ -58,7 +59,7 @@ void register_hit_on_enemy(bullet_t bullet, int index)
 			// bullet can only hit onscreen enemies
 			continue;
 		}
-		
+
 		if(ABS(bullet.x - enemysprites[i].x) <= 8 &&
 		   ABS(bullet.y - enemysprites[i].y) <= 8)
 		{
@@ -66,7 +67,7 @@ void register_hit_on_enemy(bullet_t bullet, int index)
 			//disable_enemy(i);
 			// bullet is destroyed
 			disable_bullet(index);
-			
+
 		}
 	}
 }
@@ -76,7 +77,7 @@ void register_hit_on_player(bullet_t bullet, int index, int playerx, int playery
 {
 
 	playerx += 12;
-	
+
 	if(ABS(bullet.x - playerx) <= 9 &&
 	   ABS(bullet.y - playery) <= 4)
 	{
@@ -86,7 +87,7 @@ void register_hit_on_player(bullet_t bullet, int index, int playerx, int playery
 
 		// bullet is destroyed
 		disable_bullet(index);
-		
+
 	}
 
 }
@@ -102,14 +103,14 @@ void update_bullets(int playerx, int playery, int *shield)
 {
 	int i=0;
 
-	// calculate new positions for onscreen bullets	
+	// calculate new positions for onscreen bullets
 	for(i=0; i<MAX_BULLET_HARDWARE_SPRITES; i++)
 	{
 		if(bulletsprites[i].state == BULLET_STATE_ONSCREEN)
 		{
 			bulletsprites[i].x += bulletsprites[i].speedx;
 			bulletsprites[i].y += bulletsprites[i].speedy;
-	
+
 			// check if this bullet hit an enemy
 			if(bulletsprites[i].type == BULLET_TYPE_PLAYER)
 			{
@@ -120,14 +121,14 @@ void update_bullets(int playerx, int playery, int *shield)
 				register_hit_on_player(bulletsprites[i], i, playerx, playery, shield);
 			}
 		}
-		
+
 		// kill bullet if it is off-screen by at least 10 pixels
 		if(bulletsprites[i].x <= -16 || bulletsprites[i].x >= 330 ||
 		   bulletsprites[i].y <= -16 || bulletsprites[i].y >= 234)
 		{
 			disable_bullet(i);
 		}
-	}	
+	}
 
 	// and finally, move all active bullet sprites on screen
 	for(i=0; i<MAX_BULLET_HARDWARE_SPRITES; i++)
@@ -136,7 +137,7 @@ void update_bullets(int playerx, int playery, int *shield)
 		{
 			change_sprite_pos(i+FIRST_BULLET_HARDWARE_SPRITE, bulletsprites[i].x, bulletsprites[i].y, 1);
 		}
-	}	
+	}
 }
 
 void fire_new_bullet(int initx, int inity, int speedx, int speedy, int type)
@@ -158,7 +159,7 @@ void fire_new_bullet(int initx, int inity, int speedx, int speedy, int type)
 
 			bulletsprites[j].speedx = speedx;
 			bulletsprites[j].speedy = speedy;
-			
+
 			// write sprite data too
 			set_current_sprite(j+FIRST_BULLET_HARDWARE_SPRITE);
 			write_sprite_data(initx, inity, 15, 255, 1, 1, (const PTILEMAP)&bullet[bulletsprites[j].tile]);
@@ -172,7 +173,7 @@ void fire_new_bullet(int initx, int inity, int speedx, int speedy, int type)
 void initialize_bullets()
 {
 	int i;
-	
+
 	for(i=0; i<MAX_BULLET_HARDWARE_SPRITES; i++)
 	{
 		bulletsprites[i].state = BULLET_STATE_NOTUSED;
@@ -188,7 +189,7 @@ void initialize_bullets()
 int bullet_sprites_onscreen()
 {
 	int i, count=0;
-	
+
 	for(i=0; i<MAX_BULLET_HARDWARE_SPRITES; i++)
 	{
 		if(bulletsprites[i].state == BULLET_STATE_ONSCREEN) count++;
@@ -225,16 +226,16 @@ void update_enemies(int frames, int playerx, int playery, int *shield)
 {
 	int i, j;
 	int explosionindex=0;
-	
+
 	for(i=0; i<MAX_ENEMY_HARDWARE_SPRITES; i++)
 	{
 		if(enemysprites[i].state == ENEMYSPR_STATE_ONSCREEN)
 		{
 			// first thing we do is shift all enemy sprites to the left by one pixel
 			enemysprites[i].x--;
-	
+
 			// then we see if any have reached an x of -16, which means they're now fully off-screen and can be
-			// freed up (or de-allocated, in a way)		
+			// freed up (or de-allocated, in a way)
 			if(enemysprites[i].x == -16)
 			{
 				enemysprites[i].state = ENEMYSPR_STATE_NOTUSED;
@@ -254,7 +255,7 @@ void update_enemies(int frames, int playerx, int playery, int *shield)
 	{
 		// empirical value....after 9070 we don't spawn any more enemies, because player has won
 		if(_vbl_count > 9070) break;
-		
+
 		if(enemyspritespawn_frame[i] == frames)
 		{
 			//find first unused enemy sprite
@@ -267,7 +268,7 @@ void update_enemies(int frames, int playerx, int playery, int *shield)
 					enemysprites[j].x = 319;
 					enemysprites[j].y = enemyspritespawn_y[i];
 					enemysprites[j].expframes = 50;
-					
+
 					// write sprite data too
 					set_current_sprite(j+FIRST_ENEMY_HARDWARE_SPRITE);
 					write_sprite_data(enemysprites[j].x, enemysprites[j].y, 15, 255, 1, 1, (const PTILEMAP)&enemies[1]);
@@ -354,7 +355,7 @@ void enemy_open_fire(int which, int playerx, int playery)
 void initialize_enemies()
 {
 	int i;
-	
+
 	for(i=0; i<MAX_ENEMY_HARDWARE_SPRITES; i++)
 	{
 		enemysprites[i].state = ENEMYSPR_STATE_NOTUSED;
@@ -368,7 +369,7 @@ void initialize_enemies()
 int enemy_sprites_onscreen()
 {
 	int i, count=0;
-	
+
 	for(i=0; i<MAX_ENEMY_HARDWARE_SPRITES; i++)
 	{
 		if(enemysprites[i].state == ENEMYSPR_STATE_ONSCREEN) count++;

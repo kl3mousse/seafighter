@@ -1,6 +1,6 @@
 // ADPCM HEADER FILE created by Neo Sound Builder
 
-inline void send_sound_command(BYTE CommandNo)
+extern inline void send_sound_command(BYTE CommandNo)
 {
     (*((PBYTE)0x320000)) = CommandNo;
 }
@@ -23,9 +23,9 @@ inline void send_sound_command(BYTE CommandNo)
 #define SAMPLE_COUNT 6
 static const char SoundList[5][37] =
 {
-    "JEROEN_TEL___CYBERNOID_II           \0", 
-    "BASS2                               \0", 
-    "CLOSEDHH2                           \0", 
-    "OPENHH2                             \0", 
-    "SNARE2                              \0" 
+    "JEROEN_TEL___CYBERNOID_II           \0",
+    "BASS2                               \0",
+    "CLOSEDHH2                           \0",
+    "OPENHH2                             \0",
+    "SNARE2                              \0"
 };
