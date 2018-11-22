@@ -15,6 +15,8 @@ Contributions and enhancements are welcomed. Please create a pull request.
 - compileForNeoSD.bat will create a rom in NEO format in order to load it into a NeoSD card
 
 # latest updates (latest updates first)
+- dedicated MAME hash setup in order to test as a homebrew Rom, not as a puzzledp clone. Unfortunately this now makes the Sound driver crash for some reason (to be fixed later)
+- now also compile in NeoSD format also as part of the make process
 - added 7zip and a zip version of MAME64 so that MAME is included. Now possible to test just by cloning the Git repo (dont forget to excecute 'run_me_first').
 - included own Sound roms (M1/V1) made with Neo Sound Builder: soon I can get rid off proprietary code from Puzzle De Pon
 - included Neo Sound Builder tool (from NeoBitz)
@@ -32,7 +34,7 @@ Contributions and enhancements are welcomed. Please create a pull request.
 - Black circles: source files
 - Blue/Green circles: temp files created during BUILD/LINKING build_process
 - Purple circles: Rom files for MAME
-(need to add sound building process)
+(need to add sound building process, NeoSD & ZIP output)
 
 # includes and other dependancies
 - NeoDev / NeoBitz

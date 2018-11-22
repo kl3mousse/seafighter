@@ -3,24 +3,25 @@
 @set PROJECTDIR=%cd%
 
 @REM Copy all game roms to MAME (should be six .bin files)
-del %MAMEDIR%\roms\puzzledp\*.bin
-copy output\cartridge\*.bin %MAMEDIR%\roms\puzzledp\
+del %MAMEDIR%\roms\seafighter\*.bin
+copy output\cartridge\*.bin %MAMEDIR%\roms\seafight\
 
 cd %MAMEDIR%
 
-del roms\puzzledp\*.c*
-del roms\puzzledp\*.m*
-del roms\puzzledp\*.p*
-del roms\puzzledp\*.s*
-del roms\puzzledp\*.v*
+del roms\seafight\*.c*
+del roms\seafight\*.m*
+del roms\seafight\*.p*
+del roms\seafight\*.s*
+del roms\seafight\*.v*
 
-ren roms\puzzledp\202-c1.bin 202-c1.c1
-ren roms\puzzledp\202-c2.bin 202-c2.c2
-ren roms\puzzledp\202-m1.bin 202-m1.m1
-ren roms\puzzledp\202-p1.bin 202-p1.p1
-ren roms\puzzledp\202-s1.bin 202-s1.s1
-ren roms\puzzledp\202-v1.bin 202-v1.v1
+ren roms\seafight\444-c1.bin 444-c1.c1
+ren roms\seafight\444-c2.bin 444-c2.c2
+ren roms\seafight\444-m1.bin 444-m1.m1
+ren roms\seafight\444-p1.bin 444-p1.p1
+ren roms\seafight\444-s1.bin 444-s1.s1
+ren roms\seafight\444-v1.bin 444-v1.v1
 
-mame64 -bios unibios32 puzzledp
+@rem mame64 NEOGEO SEAFIGHTER -bios unibios32
+mame64 neogeo -cart1 seafight -bios unibios32
 
 cd %PROJECTDIR%

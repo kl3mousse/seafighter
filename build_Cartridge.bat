@@ -79,27 +79,37 @@ pause
 .\include\NeoDev\m68k\bin\objcopy --gap-fill=0x00 --pad-to=0x20000 -R .data -O binary test.o dev_p1.rom
 
 @REM Pad modified roms. These are the result of the compilation
-.\include\NeoDev\m68k\bin\romwak /f dev_p1.rom 202-p1.bin
-.\include\NeoDev\m68k\bin\romwak /p 202-p1.bin 202-p1.bin 1024 255
-.\include\NeoDev\m68k\bin\romwak /w test.spr 202-c1.bin 202-c2.bin
-.\include\NeoDev\m68k\bin\romwak /f 202-c1.bin
-.\include\NeoDev\m68k\bin\romwak /f 202-c2.bin
-.\include\NeoDev\m68k\bin\romwak /p 202-c1.bin 202-c1.bin 1024 255
-.\include\NeoDev\m68k\bin\romwak /p 202-c2.bin 202-c2.bin 1024 255
+.\include\NeoDev\m68k\bin\romwak /f dev_p1.rom 444-p1.bin
+.\include\NeoDev\m68k\bin\romwak /p 444-p1.bin 444-p1.bin 1024 255
+.\include\NeoDev\m68k\bin\romwak /w test.spr 444-c1.bin 444-c2.bin
+.\include\NeoDev\m68k\bin\romwak /f 444-c1.bin
+.\include\NeoDev\m68k\bin\romwak /f 444-c2.bin
+.\include\NeoDev\m68k\bin\romwak /p 444-c1.bin 444-c1.bin 1024 255
+.\include\NeoDev\m68k\bin\romwak /p 444-c2.bin 444-c2.bin 1024 255
 
 
-copy test.fix 202-s1.bin
-.\include\NeoDev\m68k\bin\romwak /p 202-s1.bin 202-s1.bin 128 255
+copy test.fix 444-s1.bin
+.\include\NeoDev\m68k\bin\romwak /p 444-s1.bin 444-s1.bin 128 255
 
-@REM Pad Puzzle De Pon! roms which are unchanged. They are copied from the puzzledepon_original_roms subdirectory
-@REM into the current directory
-copy puzzledepon_original_roms\202-m1.bin .\
-copy puzzledepon_original_roms\202-v1.bin .\
+@REM Sound/Music roms
+copy sound\444-m1.bin .\
+copy sound\444-v1.bin .\
 @REM .\include\NeoDev\m68k\bin\romwak /p 202-v1.bin 202-v1.bin 512 255
 
 @REM Copy all game roms to output directory
 del output\cartridge\*.bin
 move *.bin output\cartridge\
+
+@REM Build ZIP rom
+cd output\cartridge
+del ..\rom\seafighter.zip
+..\..\tools\7zip\7za a ..\rom\seafighter.zip *.bin
+
+@REM Build NeoSD rom (.Neo)
+cd ..\..\tools\neosd-neoBuilder
+NeoBuilder -n seafighter -m klemousse -y 2018 -g Shooter -s 444 ..\..\output\rom\seafighter.zip
+move seafighter.neo ..\..\output\neoSD
+cd ..\..
 
 @REM Clean
 del %NEODEV%\tmp\*.o

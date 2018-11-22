@@ -15,6 +15,7 @@ mame64.exe
 mame64.sym
 /tools/MAME/cfg
 /tools/MAME/nvram
+puzzledp
 
 ##### typical excludes for C & C++ projects, thanks GitHub for this :) #####
 

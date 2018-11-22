@@ -374,6 +374,8 @@ int	main(void)
 
 	while(1)
 	{
+
+
     menu(); // press P1 or P2 start button
 		selectPlayerShip();
 		get_ready();

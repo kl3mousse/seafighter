@@ -1,7 +1,6 @@
 #include <video.h>
 #include "bullets.h"
 #include "enemy.h"
-#include "sound.h"
 
 // ==== BULLET DEFINITIONS ====
 
