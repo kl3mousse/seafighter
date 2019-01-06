@@ -1,4 +1,8 @@
 # seafighter
+![](https://img.shields.io/badge/devkit%20platform-windows-ff69b4.svg)
+![](https://img.shields.io/badge/game%20platform-MAME-blue.svg)
+![](https://img.shields.io/badge/game%20platform-NeoSD%20(real%20MVS%20or%20AES)-blue.svg)
+
 one more neogeo homebrew... an **horizontal shooter** you can play on MAME neogeo emulator, or even on arcade MVS board with a NeoSD cadridge able to load roms.
 
 I'm glad you have found this repo :) note that this is work in progress.
