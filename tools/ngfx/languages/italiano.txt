@@ -1,0 +1,142 @@
+﻿; ****************************************************************
+;  NGFX Languagefile v6
+; ****************************************************************
+; 
+LANGUAGE_MENU_FILE = Progetto
+LANGUAGE_MENU_FILE_NEW = Nuovo
+LANGUAGE_MENU_FILE_OPEN = Apri..
+LANGUAGE_MENU_FILE_SAVE  = Salva
+LANGUAGE_MENU_FILE_SAVEAS = Salva come..
+LANGUAGE_MENU_FILE_QUIT = Abbandona
+; 
+LANGUAGE_MENU_EDIT = Edita
+LANGUAGE_MENU_EDIT_UNDO = UNDO
+LANGUAGE_MENU_EDIT_REDO = REDO
+LANGUAGE_MENU_EDIT_CANVAS_CUT = Tagliare Foglio
+LANGUAGE_MENU_EDIT_CANVAS_COPY = Copia Foglio
+LANGUAGE_MENU_EDIT_CANVAS_PASTE = Incolla Foglio
+LANGUAGE_MENU_EDIT_IMAGE_IMPORT = Importa Immagine..
+LANGUAGE_MENU_EDIT_IMAGE_EXPORT = Esporta Immagine..
+; 
+LANGUAGE_MENU_CANVAS = Foglio
+LANGUAGE_MENU_CANVAS_COLUMS_INC = Colonna + 1
+LANGUAGE_MENU_CANVAS_COLUMS_DEC = Colonna - 1
+LANGUAGE_MENU_CANVAS_ROW_INC = Riga + 1
+LANGUAGE_MENU_CANVAS_ROW_DEC = Riga - 1
+; 
+LANGUAGE_MENU_OFFSET = Distanzia
+LANGUAGE_MENU_OFFSET_ADD_ONE = Distanzia + 1
+LANGUAGE_MENU_OFFSET_SUB_ONE = Distanzia - 1
+LANGUAGE_MENU_OFFSET_ADD_ROW = Distanzia + Riga
+LANGUAGE_MENU_OFFSET_SUB_ROW = Distanzia - Riga
+LANGUAGE_MENU_OFFSET_ADD_PAGE = Distanzia + Pagina
+LANGUAGE_MENU_OFFSET_SUB_PAGE = Distanzia - Pagina
+LANGUAGE_MENU_OFFSET_START = Distanzia Inizio
+LANGUAGE_MENU_OFFSET_END = Distanzia Fine
+; 
+LANGUAGE_MENU_VIEW = Vista
+LANGUAGE_MENU_VIEW_TRANSPARENCY = Vista Trasparenza
+LANGUAGE_MENU_VIEW_GRID = Vista Griglia
+LANGUAGE_MENU_VIEW_GRID_COLOR = Selezione Griglia Colori
+LANGUAGE_MENU_VIEW_TILENUMBER = Mostra Numero Tessere
+LANGUAGE_MENU_VIEW_COLORNUMBER = Mostra Numero Colori
+LANGUAGE_MENU_VIEW_REALCOLORS = Mostra HW Colori
+; 
+LANGUAGE_MENU_SCREENSHOT = Istantanea
+LANGUAGE_MENU_SCREENSHOT_SAVE = Salva Istantanea..
+LANGUAGE_MENU_SCREENSHOT_COPY = Copia Istantanea
+; 
+LANGUAGE_MENU_PALETTE = Tavolozza
+LANGUAGE_MENU_PALETTE_OPEN = Apri..
+LANGUAGE_MENU_PALETTE_SAVEAS = Salva come..
+LANGUAGE_MENU_PALETTE_EDIT = Edita..
+LANGUAGE_MENU_PALETTE_RESET = Resetta
+; 
+LANGUAGE_MENU_ANIMATION = Animazione
+LANGUAGE_MENU_ANIMATION_AUTOANIM = Auto-Animazione
+LANGUAGE_MENU_ANIMATION_FRAME_NEXT = Frame Seguente
+LANGUAGE_MENU_ANIMATION_FRAME_PREV = Frame Precedente
+; 
+LANGUAGE_MENU_WINDOW = Finestre
+LANGUAGE_MENU_WINDOW_TILE_VERT = Ordina Verticalmente
+LANGUAGE_MENU_WINDOW_TILE_HORZ = Ordina Orizzontalmente
+LANGUAGE_MENU_WINDOW_CASCADE = Cascata
+LANGUAGE_MENU_WINDOW_MINIMIZE = Minimizza Tutto
+LANGUAGE_MENU_WINDOW_NORMALIZE = Ripristina Tutto
+LANGUAGE_MENU_WINDOW_CLOSE = Chiudi
+LANGUAGE_MENU_WINDOW_CLOSE_ALL = Chiudi Tutto
+; 
+LANGUAGE_MENU_HELP = Aiuto
+LANGUAGE_MENU_HELP_ABOUT = Riguardo a..
+; 
+; ****************************************************************
+; 
+LANGUAGE_STATUS_ON = attivo
+LANGUAGE_STATUS_OFF = disattivo
+LANGUAGE_STATUS_ANIMATION = Animazione
+LANGUAGE_STATUS_GRID = Griglia
+LANGUAGE_STATUS_TRANSPARENCY = Trasparenza
+LANGUAGE_STATUS_TILE = Numero Mattonella
+LANGUAGE_STATUS_COLOR = Numero Colore
+LANGUAGE_STATUS_REALCOLOR = HW Colori
+LANGUAGE_STATUS_OFFSET = Differenza
+LANGUAGE_STATUS_WIDTH = Larghezza
+LANGUAGE_STATUS_HEIGHT = Altezza
+LANGUAGE_STATUS_PALETTE = Tavolozza
+LANGUAGE_STATUS_MAPS = Mappa(e)
+LANGUAGE_STATUS_FRAMES = Fotogramma(i)
+LANGUAGE_STATUS_NOANIMATION = No Animazione
+; 
+; ****************************************************************
+; 
+LANGUAGE_REQ_FILE_LOAD = Scegliere un file da aprire ..
+LANGUAGE_REQ_FILE_SAVE = Scegli un file per salvare ..
+LANGUAGE_REQ_FILE_SAVE_CONFIRM = Conferma Salva con nome
+LANGUAGE_REQ_FILE_SAVE_CONFIRM_TEXT = esiste già. Vuoi sostituirlo?
+LANGUAGE_REQ_FILE_IMPORT_FAILED = Formato di file non supportato.
+LANGUAGE_REQ_FILE_IMPORT_TYPE = Diminuire Modo colore
+LANGUAGE_REQ_FILE_IMPORT_PALETTE  = Palette - Ordina tramite Drag & Drop
+LANGUAGE_REQ_FILE_IMPORT_FORCEBLACK = Forza Colore # 0 a nero
+LANGUAGE_REQ_FILE_IMPORT_ENCODE = codifica
+LANGUAGE_REQ_FILE_IMPORT_MACTH = Match to current Palette
+LANGUAGE_REQ_FILE_IMPORT_ENCODE_L2R = Da sinistra a destra
+LANGUAGE_REQ_FILE_IMPORT_ENCODE_T2B = Dall'alto al basso  
+; 
+; ****************************************************************
+; 
+LANGUAGE_BUTTON_OK = Ok
+LANGUAGE_BUTTON_CANCEL = Cancella
+LANGUAGE_PALEDITOR = Editor Tavolozza
+LANGUAGE_PALEDITOR_RED = Rosso
+LANGUAGE_PALEDITOR_GREEN = Verde
+LANGUAGE_PALEDITOR_BLUE = Blu
+LANGUAGE_PALEDITOR_DARKBIT = Dark bit
+LANGUAGE_NEWROM = Nuovo Progetto
+LANGUAGE_AUTODETECT_FAILED = Auto-ricerca fallita - scegli attentamento il file idoneo!
+LANGUAGE_LASTFILES = Carica progetti dall'ultima sessione di lavoro?
+; 
+; ****************************************************************
+; 
+LANGUAGE_COLORREQUESTER = ColorRequester
+LANGUAGE_COLORREQUESTER_LINEAR = 15bit linear
+LANGUAGE_COLORREQUESTER_HARDWARE = 15bit hardware
+LANGUAGE_COLORREQUESTER_TOOLTIP1 = sinistra / destra / su / giù
+LANGUAGE_COLORREQUESTER_TOOLTIP2 = shift + sinistra / shift + destra
+; 
+; ****************************************************************
+; 
+LANGUAGE_TOOLBAR_NEW = Nuovo..
+LANGUAGE_TOOLBAR_OPEN = Apri..
+LANGUAGE_TOOLBAR_SAVEAS = Salva come..
+LANGUAGE_TOOLBAR_TILE_VERT = Ordina verticalmente
+LANGUAGE_TOOLBAR_TILE_HORZ = Ordina orizzontalmente
+LANGUAGE_TOOLBAR_CASCADE = Cascata
+; 
+LANGUAGE_TOOLBAR_ARROW = Freccia
+LANGUAGE_TOOLBAR_ZOOM = Ingrandisci
+LANGUAGE_TOOLBAR_DROPPER = Contagocce
+LANGUAGE_TOOLBAR_PAINTBRUSH = Pennello
+LANGUAGE_TOOLBAR_FLOODFILL = Riempimento
+
+LANGUAGE_TOOLBAR_COLORGADGET = LMB Colore richiesto / RMB prendi colore Desktop
+LANGUAGE_TOOLBAR_PALGADGET = LMB setta colore di fronte / RMB setta colore sfondo

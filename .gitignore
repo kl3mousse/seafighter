@@ -22,6 +22,9 @@ puzzledp
 # Prerequisites
 *.d
 
+# sprite editor files
+NGFX.ini
+
 # Compiled Object files
 *.slo
 *.lo
@@ -53,3 +56,6 @@ puzzledp
 *.app
 tools/MAME/cfg/puzzledp.cfg
 tools/MAME/nvram/puzzledp/saveram
+
+# backup files
+*.bak

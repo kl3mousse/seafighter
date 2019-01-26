@@ -1,20 +1,22 @@
 # seafighter
 one more neogeo homebrew... an **horizontal shooter** you can play on MAME neogeo emulator, or even on arcade MVS board with a NeoSD cadridge able to load roms.
 
+![https://img.shields.io/badge/buildpack-gcc%20for%20win10-blue.svg]()
+
 I'm glad you have found this repo :) note that this is work in progress.
-For now I'm trying to get basic things sorted out, starting with a good dev kit, that can be easily reused for another project.
+For now I'm trying to get basic things sorted out, starting with a good dev kit, that can be easily reused for another project. Most of the code /game logic is from Sebastian Mihai (Neo Thunder game). I'm mostly focusing on reverse engineering the build/compilation process and eventually tune it a bit (add sound? add makefile? dev tools?).
 
-Contributions and enhancements are welcomed. Please create a pull request.
+Contributions and enhancements are welcome. Please create a pull request.
 
-*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Vasiliy Familiya, Smkdan, Chris Covell...) for the assets & examples :)*
+*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Blastar, Vasiliy Familiya, Smkdan, Chris Covell...) for the assets & examples :)*
 
 # key programs
 - run_me_first.bat: will setup Windows PATH to be able to access compilers and libraries for your C/ASM code into ROMs
 - build_Cartridge.bat will compile your code and build roms
 - testwithMAME.bat will launch your ROM with MAME
-- compileForNeoSD.bat will create a rom in NEO format in order to load it into a NeoSD card
 
 # latest updates (latest updates first)
+- added NGFX tool for sprites/graphic/fix editing
 - dedicated MAME hash setup in order to test as a homebrew Rom, not as a puzzledp clone. Unfortunately this now makes the Sound driver crash for some reason (to be fixed later)
 - now also compile in NeoSD format also as part of the make process
 - added 7zip and a zip version of MAME64 so that MAME is included. Now possible to test just by cloning the Git repo (dont forget to excecute 'run_me_first').
@@ -41,6 +43,7 @@ Contributions and enhancements are welcomed. Please create a pull request.
   - gcc version 2.95.2
   - version has been modified to map the new project structure (moving the game out of "src" folder, and also trying to get rid off all Win10 PATH and other environment variables
 - Neo Sound Builder v008 by NeoBitz
+- NGFX by Blastar (https://blastar.citavia.de)
 - DATlib 0.3 by HPman (included in subdirectories, not yet in game)
 - MAME v0.197 (http://mamedev.org/)
 - Unibios 3.2 (http://unibios.free.fr)

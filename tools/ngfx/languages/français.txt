@@ -1,0 +1,142 @@
+﻿; ****************************************************************
+;  NGFX Languagefile v6
+; ****************************************************************
+; 
+LANGUAGE_MENU_FILE = Fichier
+LANGUAGE_MENU_FILE_NEW = Nouveau
+LANGUAGE_MENU_FILE_OPEN = Ouvert..
+LANGUAGE_MENU_FILE_SAVE = Enregistrer
+LANGUAGE_MENU_FILE_SAVEAS = Enregistrer sous..
+LANGUAGE_MENU_FILE_QUIT = Quitter
+;
+LANGUAGE_MENU_EDIT = Modifier
+LANGUAGE_MENU_EDIT_UNDO = annuler
+LANGUAGE_MENU_EDIT_REDO = refaire
+LANGUAGE_MENU_EDIT_CANVAS_CUT = Couper Toile
+LANGUAGE_MENU_EDIT_CANVAS_COPY = Copier Toile
+LANGUAGE_MENU_EDIT_CANVAS_PASTE = Coller Toile
+LANGUAGE_MENU_EDIT_IMAGE_IMPORT = Importer une image..
+LANGUAGE_MENU_EDIT_IMAGE_EXPORT = Exporter l'image..
+;
+LANGUAGE_MENU_CANVAS = Toile
+LANGUAGE_MENU_CANVAS_COLUMS_INC = Colonne + 1
+LANGUAGE_MENU_CANVAS_COLUMS_DEC = Colonne - 1
+LANGUAGE_MENU_CANVAS_ROW_INC = Row + 1
+LANGUAGE_MENU_CANVAS_ROW_DEC = Row - 1
+;
+LANGUAGE_MENU_OFFSET = Offset
+LANGUAGE_MENU_OFFSET_ADD_ONE = Offset + 1
+LANGUAGE_MENU_OFFSET_SUB_ONE = Offset - 1
+LANGUAGE_MENU_OFFSET_ADD_ROW = Offset + Row
+LANGUAGE_MENU_OFFSET_SUB_ROW = Offset - Row
+LANGUAGE_MENU_OFFSET_ADD_PAGE = Offset + page
+LANGUAGE_MENU_OFFSET_SUB_PAGE = Offset - Page
+LANGUAGE_MENU_OFFSET_START = Début du décalage
+LANGUAGE_MENU_OFFSET_END = Fin Offset
+;
+LANGUAGE_MENU_VIEW = Voir
+LANGUAGE_MENU_VIEW_TRANSPARENCY = Voir la transparence
+LANGUAGE_MENU_VIEW_GRID = Voir Grille
+LANGUAGE_MENU_VIEW_GRID_COLOR = Set couleur du quadrillage
+LANGUAGE_MENU_VIEW_TILENUMBER = Afficher les numéros de Tile
+LANGUAGE_MENU_VIEW_COLORNUMBER = Afficher les numéros de couleurs
+LANGUAGE_MENU_VIEW_REALCOLORS = Show HW Colors
+;
+LANGUAGE_MENU_SCREENSHOT = Capture d'écran
+LANGUAGE_MENU_SCREENSHOT_SAVE = Enregistrer Capture d'écran..
+LANGUAGE_MENU_SCREENSHOT_COPY = Copie d'écran
+;
+LANGUAGE_MENU_PALETTE = Palette
+LANGUAGE_MENU_PALETTE_OPEN = Ouvert..
+LANGUAGE_MENU_PALETTE_SAVEAS = Enregistrer sous..
+LANGUAGE_MENU_PALETTE_EDIT = Modifier..
+LANGUAGE_MENU_PALETTE_RESET = réinitialisation
+;
+LANGUAGE_MENU_ANIMATION = Animations
+LANGUAGE_MENU_ANIMATION_AUTOANIM = Auto-Animation
+LANGUAGE_MENU_ANIMATION_FRAME_NEXT = Trame suivante
+LANGUAGE_MENU_ANIMATION_FRAME_PREV = Image précédente
+;
+LANGUAGE_MENU_WINDOW = de Windows
+LANGUAGE_MENU_WINDOW_TILE_VERT = Mosaïque verticale
+LANGUAGE_MENU_WINDOW_TILE_HORZ = Mosaïque horizontale
+LANGUAGE_MENU_WINDOW_CASCADE = Cascade
+LANGUAGE_MENU_WINDOW_MINIMIZE = minimiser toutes les
+LANGUAGE_MENU_WINDOW_NORMALIZE = Tout Restore
+LANGUAGE_MENU_WINDOW_CLOSE = Fermer
+LANGUAGE_MENU_WINDOW_CLOSE_ALL = Tout fermer
+;
+LANGUAGE_MENU_HELP = Aide
+LANGUAGE_MENU_HELP_ABOUT = propos..
+;
+; ************************************************** **************
+;
+LANGUAGE_STATUS_ON = sur
+LANGUAGE_STATUS_OFF = off
+LANGUAGE_STATUS_ANIMATION = Animations
+LANGUAGE_STATUS_GRID = Grille
+LANGUAGE_STATUS_TRANSPARENCY = Transparence
+LANGUAGE_STATUS_TILE = Nombre de Tile
+LANGUAGE_STATUS_COLOR = Numéro de couleur
+LANGUAGE_STATUS_REALCOLOR = Couleurs HW
+LANGUAGE_STATUS_OFFSET = Offset
+LANGUAGE_STATUS_WIDTH = Largeur
+LANGUAGE_STATUS_HEIGHT = Hauteur
+LANGUAGE_STATUS_PALETTE = Palette
+LANGUAGE_STATUS_MAPS = Maps (s)
+LANGUAGE_STATUS_FRAMES = Cadre (s)
+LANGUAGE_STATUS_NOANIMATION = Pas d'animation
+;
+; ************************************************** **************
+;
+LANGUAGE_REQ_FILE_LOAD = Choisissez un fichier à ouvrir..
+LANGUAGE_REQ_FILE_SAVE = Choisissez un fichier à enregistrer..
+LANGUAGE_REQ_FILE_SAVE_CONFIRM = Confirmer Enregistrer sous
+LANGUAGE_REQ_FILE_SAVE_CONFIRM_TEXT = existe déjà. Voulez-vous le remplacer?
+LANGUAGE_REQ_FILE_IMPORT_FAILED = format de fichier non pris en charge. * .BMP (Windows bitmap) avec 16 ou 256 couleurs indexées (RLE-comprimé ou RGB) seulement.
+LANGUAGE_REQ_FILE_IMPORT_TYPE = Diminution Mode couleur
+LANGUAGE_REQ_FILE_IMPORT_PALETTE  = Palette - sort en utilisant Drag & Drop
+LANGUAGE_REQ_FILE_IMPORT_FORCEBLACK = Color Force # 0 au noir
+LANGUAGE_REQ_FILE_IMPORT_ENCODE = Codage
+LANGUAGE_REQ_FILE_IMPORT_MACTH = Match to current Palette
+LANGUAGE_REQ_FILE_IMPORT_ENCODE_L2R = de gauche à droite
+LANGUAGE_REQ_FILE_IMPORT_ENCODE_T2B = de haut en bas   
+;
+; ************************************************** **************
+;
+LANGUAGE_BUTTON_OK = Ok
+LANGUAGE_BUTTON_CANCEL = Annuler
+LANGUAGE_PALEDITOR = Éditeur de Palette
+LANGUAGE_PALEDITOR_RED = Rouge
+LANGUAGE_PALEDITOR_GREEN = Vert
+LANGUAGE_PALEDITOR_BLUE = Bleu
+LANGUAGE_PALEDITOR_DARKBIT = peu sombre
+LANGUAGE_NEWROM = Nouveau fichier
+LANGUAGE_AUTODETECT_FAILED = Auto-détection a échoué - choisir avec soin format de fichier!
+LANGUAGE_LASTFILES = Charger les fichiers de la dernière session?
+; 
+; ****************************************************************
+; 
+LANGUAGE_COLORREQUESTER = ColorRequester
+LANGUAGE_COLORREQUESTER_LINEAR = 15bit linear
+LANGUAGE_COLORREQUESTER_HARDWARE = 15bit hardware
+LANGUAGE_COLORREQUESTER_TOOLTIP1 = gauche / droite / haut / bas
+LANGUAGE_COLORREQUESTER_TOOLTIP2 = shift + gauche / shift + droite
+; 
+; ****************************************************************
+; 
+LANGUAGE_TOOLBAR_NEW = Nouveau..
+LANGUAGE_TOOLBAR_OPEN = Ouvert..
+LANGUAGE_TOOLBAR_SAVEAS = Enregistrer sous..
+LANGUAGE_TOOLBAR_TILE_VERT = Mosaïque verticale
+LANGUAGE_TOOLBAR_TILE_HORZ = Mosaïque horizontale
+LANGUAGE_TOOLBAR_CASCADE = Cascade
+;
+LANGUAGE_TOOLBAR_ARROW = Flèche
+LANGUAGE_TOOLBAR_ZOOM = Zoom
+LANGUAGE_TOOLBAR_DROPPER = Dropper
+LANGUAGE_TOOLBAR_PAINTBRUSH = Pinceau
+LANGUAGE_TOOLBAR_FLOODFILL = Flood Fill
+
+LANGUAGE_TOOLBAR_COLORGADGET = LMB Couleur demandeur / RMB couleur get de bureau
+LANGUAGE_TOOLBAR_PALGADGET = LMB définir la couleur avant / RMB en retrait couleur
