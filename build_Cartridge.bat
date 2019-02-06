@@ -72,7 +72,7 @@ echo.
 echo ******************************
 echo ***** Linking GCC         ****
 echo ******************************
-.\include\NeoDev\m68k\bin\gcc -L%NEODEV%\m68k\lib -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -Wl,-T%NEODEV%\src\system\neocart.x %NEODEV%\tmp\crt0_cart.o %NEODEV%\tmp\main.o %NEODEV%\tmp\background.o %NEODEV%\tmp\gamelogic.o %NEODEV%\tmp\enemies.o %NEODEV%\tmp\mylib.o %NEODEV%\tmp\palettes.o %NEODEV%\tmp\starfield.o %NEODEV%\tmp\playership.o %NEODEV%\tmp\playership_2.o %NEODEV%\tmp\playership_3.o %NEODEV%\tmp\bullet.o -linput -lvideo -lc -lgcc -o test.o
+.\include\NeoDev\m68k\bin\gcc -L%NEODEV%\m68k\lib -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -Wl,-T%NEODEV%\src\system\neocart.x %NEODEV%\tmp\crt0_cart.o %NEODEV%\tmp\main.o  %NEODEV%\tmp\palettes.o %NEODEV%\tmp\starfield.o %NEODEV%\tmp\playership.o %NEODEV%\tmp\playership_2.o %NEODEV%\tmp\playership_3.o %NEODEV%\tmp\bullet.o -lDATlib -lc -lgcc -o test.o
 pause
 
 @REM Pad program rom
