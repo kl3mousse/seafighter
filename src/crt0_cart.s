@@ -10,7 +10,7 @@ _ENTRY_COIN_SOUND	= _dummy_config_handler |; coin sound
 ************************ Definitions *************************
 _NGH	=	0x7777
 _PROGRAM_SIZE	=	0x00100000
-_WRK_BCKP_AREA = bkp_data
+_WRK_BCKP_AREA = 0x0000000
 _WRK_BCKP_AREA_SIZE = 0x0100	|;256bytes
 _EYE_CATCHER = 0x02	/*;eye catcher (0-common 1-custom 2-off)*/
 _EYE_CATCHER_TILES = 0x01 /*;eye catcher start tiles (upper bits, 0x01 => 0x0100)*/
