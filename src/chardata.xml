@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<chardata>
+  <setup>
+    <starting_tile>256</starting_tile>
+	<charfile>out\char.bin</charfile>
+    <mapfile>out\charMaps.s</mapfile>
+    <palfile>out\charPals.s</palfile>
+    <incfile>out\charInclude.h</incfile>
+	<incprefix>../</incprefix>
+  </setup>
+  <pict id="test_pict">
+    <file>gfx\fighter_hugo_02.png</file>
+    <flips>xyz</flips>
+  </pict>
+</chardata>

@@ -47,17 +47,9 @@ int	main(void)
 	p1ship_type = 0; //0 or 1 or 2
   p2ship_type = 1; //0 or 1 or 2
 
-	while(1)
-	{
 
-
-    //menu(); // press P1 or P2 start button
-		//selectPlayerShip();
-		//get_ready();
-		//game();
-		//if(lastscore < 32)
-			//game_over();
-	}
+  initGfx();SCClose();
+ while(1){waitVBlank();SCClose();}
 
 	return 0;
 }
