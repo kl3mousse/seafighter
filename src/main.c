@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <DATlib.h>
 #include <input.h>
+#include "..\gfxout\charInclude.h"
+#include "..\gfxout\fixData.h"
+
 
 // pallete information
 // extern PALETTE	palettes[];
