@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <chardata>
 	<setup fileType="fix">
-		<charfile>out\fix.bin</charfile>
-		<palfile>out\fixPals.s</palfile>
-		<incfile>out\fixData.h</incfile>
+		<charfile>gfxout\fix.bin</charfile>
+		<palfile>gfxout\fixPals.s</palfile>
+		<incfile>gfxout\fixData.h</incfile>
 	</setup>
-	
+
 	<import bank="0">
 		<file>gfx\fix\systemFont.bin</file>
 	</import>
@@ -17,7 +17,7 @@
 	<fix bank="3" id="fix_bars">
 		<file>gfx\fix\bars.png</file>
 	</fix>
-	
+
 	<fix bank="5" id="logo95">
 		<file>gfx\fix\logo95.png</file>
 	</fix>
@@ -30,5 +30,5 @@
 	<fix bank="5" id="logo98">
 		<file>gfx\fix\logo98.png</file>
 	</fix>
-	
+
 </chardata>

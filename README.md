@@ -18,6 +18,7 @@ I'm now in the middle of adding DatLib in the whole package. I've had to remove 
 - testwithMAME.bat will launch your ROM with MAME
 
 # latest updates (latest updates first)
+- initiated a simple makefile
 - started to break the whole thing to include DATlib from HPman. This requires to change the make/build process (wip). Fix & C1/C2 files build process OK.
 - added NGFX tool for sprites/graphic/fix editing
 - dedicated MAME hash setup in order to test as a homebrew Rom, not as a puzzledp clone. Unfortunately this now makes the Sound driver crash for some reason (to be fixed later)
