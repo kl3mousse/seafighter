@@ -10,7 +10,7 @@
 #       is easier to understand than the
 #       average. It is not optimised, it
 #       is made to be read to understand
-#       how the set of romfiles is built 
+#       how the set of romfiles is built
 ##########################################
 
 .DEFAULT_GOAL := rom
@@ -21,7 +21,7 @@ rom: gfx fix_gfx
 #######################################
 # Test (used by TravisCI)
 #######################################
-test: rom
+test: main_pgm
 
 #############################################
 # Install: set proper Windows env. variables
@@ -42,7 +42,7 @@ include\NeoDev\tmp\crt0_cart.o: src\crt0_cart.s
 # main program C compilation
 #############################################
 main_pgm: include\NeoDev\tmp\main.o
-include\NeoDev\tmp\main.o: src\main.c
+include\NeoDev\tmp\main.o: src\main.c ..\gfxout\charInclude.h ..\gfxout\fixData.h
 	gcc -I.\include\NeoDev\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\main.c -o .\include\NeoDev\tmp\main.o
 
 #############################################
@@ -56,7 +56,7 @@ main_linking:
 #######################################
 # NEOGEO GRAPHIC ROMS
 #######################################
-gfx: src\chardata.xml
+gfx ..\gfxout\charInclude.h: src\chardata.xml
 	@echo "GFX..."
 	.\include\DATlib\NeoDev\m68k\bin\Buildchar.exe src\chardata.xml
 	.\include\DATlib\NeoDev\m68k\bin\charSplit.exe gfxout\char.bin -rom gfxout\444
@@ -66,7 +66,7 @@ gfx: src\chardata.xml
 #######################################
 # NEOGEO FIX ROM
 #######################################
-fix_gfx: gfx\fix\systemFont.bin src\fixData.xml
+fix_gfx ..\gfxout\fixData.h: gfx\fix\systemFont.bin src\fixData.xml
 	@echo "FIX..."
 	include\DATlib\NeoDev\m68k\bin\Buildchar.exe src\fixData.xml
 	cp gfxout\fix.bin gfxout\444.S1
