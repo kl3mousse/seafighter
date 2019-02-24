@@ -6,9 +6,10 @@
 *.Z80
 *.ZIP
 
-# temp doc files
+# temp files
 *.pptx
 samples
+old
 
 # MAME excludes
 mame64.exe

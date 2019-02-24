@@ -52,7 +52,14 @@ int	main(void)
 
 
   initGfx();SCClose();
- while(1){waitVBlank();SCClose();}
+ while(1){
+   waitVBlank();
+
+   backgroundColor(0x7bbb);
+
+   clearFixLayer();
+   fixPrint(2,3,4,3,"hello world");
+   SCClose();}
 
 	return 0;
 }
