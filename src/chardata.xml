@@ -2,7 +2,7 @@
 <chardata>
   <setup>
     <starting_tile>256</starting_tile>
-	<charfile>gfxout\char.bin</charfile>
+	  <charfile>gfxout\char.bin</charfile>
     <mapfile>gfxout\charMaps.s</mapfile>
     <palfile>gfxout\charPals.s</palfile>
     <incfile>gfxout\charInclude.h</incfile>
@@ -27,7 +27,7 @@
     <file>gfx\ffbg_c.png</file>
   </pict>
   <pict id="terrypict">
-    <file>gfx\terry_portrait.png</file>
+    <file>gfx\terry_portrait_.png</file>
     <flips>xyz</flips>
   </pict>
   <pict id="desert">

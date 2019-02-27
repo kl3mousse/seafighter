@@ -16,9 +16,9 @@
 ##########################################
 
 .DEFAULT_GOAL := rom
-.PHONY: rom gfx fix_gfx clean install cart_header main_pgm main_linking
+.PHONY: rom gfx  clean install main_pgm
 
-rom: gfx fix_gfx main_linking
+rom: main_pgm
 
 #######################################
 # Test (used by TravisCI)
@@ -39,24 +39,13 @@ install:
 	.\tools\pathed\pathed /user /add "%cd%\include\NeoDev\m68k\bin"
 	.\tools\7zip\7za e .\tools\mame\mame64.exe.zip -o.\tools\mame\
 
-#############################################
-# cartridge header ASM compilation
-#############################################
-cart_header: include\NeoDev\tmp\crt0_cart.o
-include\NeoDev\tmp\crt0_cart.o: src\crt0_cart.s
-	.\include\NeoDev\m68k\bin\as -m68000 --register-prefix-optional .\src\crt0_cart.s -o include\NeoDev\tmp\crt0_cart.o
 
 #############################################
 # main program C compilation
 #############################################
-main_pgm: include\NeoDev\tmp\main.o
-include\NeoDev\tmp\main.o: src\main.c ..\gfxout\charInclude.h ..\gfxout\fixData.h
+main_pgm:
+	.\include\NeoDev\m68k\bin\as -m68000 --register-prefix-optional .\src\crt0_cart.s -o include\NeoDev\tmp\crt0_cart.o
 	gcc -I.\include\NeoDev\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\main.c -o .\include\NeoDev\tmp\main.o
-
-#############################################
-# main Linking
-#############################################
-main_linking: include\NeoDev\tmp\main.o include\NeoDev\tmp\crt0_cart.o
 	.\include\NeoDev\m68k\bin\gcc -L.\include\NeoDev\m68k\lib -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -Wl,-T.\include\NeoDev\src\system\neocart.x .\include\NeoDev\tmp\crt0_cart.o .\include\NeoDev\tmp\main.o .\include\NeoDev\tmp\charMaps.o .\include\NeoDev\tmp\fixPals.o .\include\NeoDev\tmp\charPals.o -lDATlib -lc -lgcc -o test.o
 	.\include\NeoDev\m68k\bin\objcopy --gap-fill=0x00 --pad-to=0x20000 -R .data -O binary test.o dev_p1.rom
 	.\include\NeoDev\m68k\bin\romwak /f dev_p1.rom 444-p1.bin
@@ -68,7 +57,7 @@ main_linking: include\NeoDev\tmp\main.o include\NeoDev\tmp\crt0_cart.o
 #######################################
 # NEOGEO GRAPHIC ROMS
 #######################################
-gfx ..\gfxout\charInclude.h: src\chardata.xml
+gfx:
 	@echo "GFX..."
 	.\include\DATlib\NeoDev\m68k\bin\Buildchar.exe src\chardata.xml
 	.\include\DATlib\NeoDev\m68k\bin\charSplit.exe gfxout\char.bin -rom gfxout\444
@@ -76,11 +65,6 @@ gfx ..\gfxout\charInclude.h: src\chardata.xml
 	mv gfxout\444.C2 output\cartridge\444-c2.bin
 	.\include\NeoDev\m68k\bin\as -m68000 --register-prefix-optional .\gfxout\charPals.s -o .\include\NeoDev\tmp\charPals.o
 	.\include\NeoDev\m68k\bin\as -m68000 --register-prefix-optional .\gfxout\charMaps.s -o .\include\NeoDev\tmp\charMaps.o
-
-#######################################
-# NEOGEO FIX ROM
-#######################################
-fix_gfx ..\gfxout\fixData.h: gfx\fix\systemFont.bin src\fixData.xml
 	@echo "FIX..."
 	include\DATlib\NeoDev\m68k\bin\Buildchar.exe src\fixData.xml
 	cp gfxout\fix.bin output\cartridge\444-s1.bin

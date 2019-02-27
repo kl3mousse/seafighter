@@ -17,6 +17,7 @@ mame64.sym
 /tools/MAME/cfg
 /tools/MAME/nvram
 puzzledp
+nebula
 
 ##### typical excludes for C & C++ projects, thanks GitHub for this :) #####
 

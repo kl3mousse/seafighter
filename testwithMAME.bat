@@ -5,6 +5,7 @@
 @REM Copy all game roms to MAME (should be six .bin files)
 del %MAMEDIR%\roms\seafighter\*.bin
 copy output\cartridge\*.bin %MAMEDIR%\roms\seafight\
+copy gfxout\char.bin %MAMEDIR%\roms\seafight\
 
 cd %MAMEDIR%
 
