@@ -74,77 +74,8 @@ void scrollerSetPosClipped(scroller *s, short toX, short toY, ushort clipping) {
 	} else scrollerSetPos(s,toX,toY);
 }
 
-void scrollerDemo() {
-	int x=FRONT_START_X;
-	int y=FRONT_START_Y;
-	int carx=320;
-	int cary=106;
-	int backX;
-	int backY;
+void scrollerDemo(){}
 
-	scroller backScroll, frontScroll;
-	picture car;
-
-	backgroundColor(0x7bbb);
-	LSPCmode=0x1c00;	//autoanim speed
-	clearFixLayer();
-	jobMeterSetup(true);
-
-	scrollerInit(&backScroll, &ffbg_a, 1, 16, (((x-8)*141)/299)+BACK_MIN_X, (((y-16)*3)/8)+BACK_MIN_Y);
-	palJobPut(16, ffbg_a.palInfo->count, ffbg_a.palInfo->data);
-
-	scrollerInit(&frontScroll, &ffbg_b, 22, 16 + ffbg_a.palInfo->count, x, y);
-	//scrollerInitClipped(&frontScroll, &ffbg_b, 22, 16 + ffbg_a.palInfo->count, x, y, CLIPPING);
-	palJobPut(16 + ffbg_a.palInfo->count, ffbg_b.palInfo->count, ffbg_b.palInfo->data);
-
-	pictureInit(&car, &ffbg_c, 43, 16 + ffbg_a.palInfo->count + ffbg_b.palInfo->count, carx, cary, FLIP_NONE);
-	palJobPut(16 + ffbg_a.palInfo->count + ffbg_b.palInfo->count, ffbg_c.palInfo->count, ffbg_c.palInfo->data);
-
-	fixPrint(2,3,4,3,"1P \x12\x13\x10\x11: scroll");
-
-	SCClose();
-	while(1) {
-		waitVBlank();
-
-		while((volMEMWORD(0x3c0006)>>7)!=0x120); //wait raster line 16
-		jobMeterColor(JOB_PURPLE);
-
-		p1=volMEMBYTE(P1_CURRENT);
-		ps=volMEMBYTE(PS_EDGE);
-
-		if(ps&P1_START) {
-			clearSprites(1, 42+ffbg_c.tileWidth);
-			SCClose();
-			waitVBlank();
-			return;
-		}
-
-		if(p1&JOY_UP)	y--;
-		if(p1&JOY_DOWN)	y++;
-		if(p1&JOY_LEFT)	x--;
-		if(p1&JOY_RIGHT)	x++;
-
-		if(x<FRONT_MIN_X) x=FRONT_MIN_X;
-		else if(x>FRONT_MAX_X) x=FRONT_MAX_X;
-		if(y<FRONT_MIN_Y) y=FRONT_MIN_Y;
-		else if(y>FRONT_MAX_Y) y=FRONT_MAX_Y;
-
-		if(x>161) {
-			cary=106+(24-y);
-			pictureSetPos(&car,320-(x-161),cary);
-		}	else pictureSetPos(&car,320,cary);
-
-		backX=(((x-8)*141)/299)+BACK_MIN_X;
-		backY=(((y-16)*3)/8)+BACK_MIN_Y;
-
-		jobMeterColor(JOB_BLUE);
-		scrollerSetPos(&frontScroll, x, y);
-		//scrollerSetPosClipped(&frontScroll, x, y, CLIPPING);
-		scrollerSetPos(&backScroll, backX, backY);
-		jobMeterColor(JOB_GREEN);
-		SCClose();
-	}
-}
 
 void sortSprites(aSprite *list[], int count) {
 	//insertion sort
@@ -165,243 +96,8 @@ void sortSprites(aSprite *list[], int count) {
 #define POOL_MODE
 #define LOTS
 
-void aSpriteDemo() {
-	int x=87;
-	int y=136;
-	int relX,relY;
-	short showdebug=false;
-	aSprite demoSpr,demoSpr2,demoSpr3;
-	ushort *data;
-	ushort flipMode=0,anim=0;
-	#ifdef POOL_MODE
-	spritePool testPool;
-	uint *drawTable[16];
-	uint *drawTablePtr;
-	int sortSize;
-		#ifdef LOTS
-		aSprite demoSpr4,demoSpr5,demoSpr6,demoSpr7,demoSpr8,demoSpr9,demoSprA;
-		#endif
-	#endif
-	short way1=JOY_UP,way2=JOY_UP;
-
-	clearFixLayer();
-	backgroundColor(0x7bbb);
-	jobMeterSetup(true);
-
-	#ifdef POOL_MODE
-	aSpriteInit(&demoSpr,&bmary_spr,AS_USE_SPRITEPOOL,16,x,y,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr2,&bmary_spr,AS_USE_SPRITEPOOL,16,160-16,y,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr3,&bmary_spr,AS_USE_SPRITEPOOL,16,160+16,y,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	#ifdef LOTS
-	aSpriteInit(&demoSpr4,&bmary_spr,AS_USE_SPRITEPOOL,16,160+32,146,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr5,&bmary_spr,AS_USE_SPRITEPOOL,16,160-32,156,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr6,&bmary_spr,AS_USE_SPRITEPOOL,16,160+48,166,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr7,&bmary_spr,AS_USE_SPRITEPOOL,16,160-48,176,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr8,&bmary_spr,AS_USE_SPRITEPOOL,16,160+10,186,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr9,&bmary_spr,AS_USE_SPRITEPOOL,16,160-10,196,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSprA,&bmary_spr,AS_USE_SPRITEPOOL,16,87,206,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	#endif
-	#else
-	aSpriteInit(&demoSpr,&bmary_spr,1,16,x,y,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr2,&bmary_spr,5,16,160-16,y,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	aSpriteInit(&demoSpr3,&bmary_spr,9,16,160+16,y,0,FLIP_NONE,AS_FLAGS_DEFAULT);
-	#endif
-
-	palJobPut(16,bmary_spr.palInfo->count,&bmary_spr.palInfo->data);
-
-	data=dbgTags.maps[0];
-	palJobPut(200,dbgTags.palInfo->count,&dbgTags.palInfo->data);
-	SC234Put(VRAM_POSX_ADDR(200),VRAM_POSX(0));
-	SC234Put(VRAM_POSY_ADDR(200),VRAM_POSY(224,SPR_UNLINK,0));
-	SC234Put(VRAM_SPR_ADDR(200),data[4<<1]);
-	SC234Put(VRAM_SPR_ADDR(200)+1,200<<8);
-	SC234Put(VRAM_POSX_ADDR(201),VRAM_POSX(0));
-	SC234Put(VRAM_POSY_ADDR(201),VRAM_POSY(224,SPR_UNLINK,0));
-	SC234Put(VRAM_SPR_ADDR(201),data[40<<1]);
-	SC234Put(VRAM_SPR_ADDR(201)+1,200<<8);
-	SC234Put(VRAM_POSX_ADDR(202),VRAM_POSX(0));
-	SC234Put(VRAM_POSY_ADDR(202),VRAM_POSY(224,SPR_UNLINK,0));
-	SC234Put(VRAM_SPR_ADDR(202),data[40<<1]);
-	SC234Put(VRAM_SPR_ADDR(202)+1,(200<<8)|FLIP_X);
-	SC234Put(VRAM_POSX_ADDR(203),VRAM_POSX(0));
-	SC234Put(VRAM_POSY_ADDR(203),VRAM_POSY(224,SPR_UNLINK,0));
-	SC234Put(VRAM_SPR_ADDR(203),data[40<<1]);
-	SC234Put(VRAM_SPR_ADDR(203)+1,(200<<8)|FLIP_Y);
-	SC234Put(VRAM_POSX_ADDR(204),VRAM_POSX(0));
-	SC234Put(VRAM_POSY_ADDR(204),VRAM_POSY(224,SPR_UNLINK,0));
-	SC234Put(VRAM_SPR_ADDR(204),data[40<<1]);
-	SC234Put(VRAM_SPR_ADDR(204)+1,(200<<8)|FLIP_XY);
-
-	fixPrint(2,3,4,3,"1P \x12\x13\x10\x11: move sprite");
-	fixPrint(2,4,4,3,"1P A+\x12\x13\x10\x11: flip mode");
-	fixPrint(2,5,4,3,"1P B/C/D: toggle animation");
-	fixPrint(12,6,4,3,"/coords mode/debug");
-
-	#ifdef POOL_MODE
-	spritePoolInit(&testPool,10,80,true);
-	drawTablePtr=(int*)drawTable;
-	*drawTablePtr++=0;
-	*drawTablePtr++=(uint)&demoSpr;
-	*drawTablePtr++=(uint)&demoSpr2;
-	*drawTablePtr++=(uint)&demoSpr3;
-	sortSize=3;
-		#ifdef LOTS
-		*drawTablePtr++=(uint)&demoSpr4;
-		*drawTablePtr++=(uint)&demoSpr5;
-		*drawTablePtr++=(uint)&demoSpr6;
-		*drawTablePtr++=(uint)&demoSpr7;
-		*drawTablePtr++=(uint)&demoSpr8;
-		*drawTablePtr++=(uint)&demoSpr9;
-		*drawTablePtr++=(uint)&demoSprA;
-		sortSize=10;
-		#endif
-	*drawTablePtr=0;
-
-	sortSprites((aSprite**)&drawTable[1],sortSize);
-	spritePoolDrawList(&testPool,&drawTable[1]);
-	spritePoolClose(&testPool);
-	#else
-	aSpriteAnimate(&demoSpr);
-	aSpriteAnimate(&demoSpr2);
-	aSpriteAnimate(&demoSpr3);
-	#endif
-
-	while(1) {
-		SCClose();
-		waitVBlank();
-
-		p1=volMEMBYTE(P1_CURRENT);
-		p1e=volMEMBYTE(P1_EDGE);
-		p2=volMEMBYTE(P2_EDGE);
-		ps=volMEMBYTE(PS_CURRENT);
-
-		if(ps&P1_START) {
-			clearSprites(1, 150);
-			clearSprites(200, 5);
-			SCClose();
-			waitVBlank();
-			return;
-		}
-
-		while((volMEMWORD(0x3c0006)>>7)!=0x120); //wait raster line 16
-		jobMeterColor(JOB_BLUE);
-
-		if(p1&JOY_A) {
-			if(p1e&JOY_DOWN)	flipMode|=FLIP_Y;
-			if(p1e&JOY_UP)		flipMode&=~FLIP_Y;
-			if(p1e&JOY_LEFT)	flipMode|=FLIP_X;
-			if(p1e&JOY_RIGHT)	flipMode&=~FLIP_X;
-			aSpriteSetFlip(&demoSpr,flipMode);
-		} else {
-			if(p1&JOY_UP)	y--;
-			if(p1&JOY_DOWN)	y++;
-			if(p1&JOY_LEFT)	x--;
-			if(p1&JOY_RIGHT)x++;
-
-			if(p1e&JOY_B)	aSpriteSetAnim(&demoSpr,anim^=1);
-			if(p1e&JOY_C)	{demoSpr.flags^=AS_FLAG_STRICT_COORDS;demoSpr.flags|=AS_FLAG_FLIPPED;}
-			//if(p1e&JOY_D)	aSpriteSetAnim(&demoSpr,2);
-
-			if(p1e&JOY_D) {
-				if(showdebug) {
-					//move debug stuff offscreen
-					SC234Put(VRAM_POSY_ADDR(200),VRAM_POSY(224,SPR_UNLINK,0));
-					SC234Put(VRAM_POSY_ADDR(201),VRAM_POSY(224,SPR_UNLINK,0));
-					SC234Put(VRAM_POSY_ADDR(202),VRAM_POSY(224,SPR_UNLINK,0));
-					SC234Put(VRAM_POSY_ADDR(203),VRAM_POSY(224,SPR_UNLINK,0));
-					SC234Put(VRAM_POSY_ADDR(204),VRAM_POSY(224,SPR_UNLINK,0));
-					fixJobPut(0,25,FIX_LINE_WRITE,0,_fixBlankLine);
-					fixJobPut(0,26,FIX_LINE_WRITE,0,_fixBlankLine);
-					fixJobPut(0,27,FIX_LINE_WRITE,0,_fixBlankLine);
-					fixJobPut(0,28,FIX_LINE_WRITE,0,_fixBlankLine);
-				}
-				showdebug^=1;
-			}
-		}
-
-		//	if(p2&JOY_A) aSpriteSetStep(&demoSpr, 3);
-		//	if(p2&JOY_B) aSpriteSetStep2(&demoSpr, 3);
-		//	if(p2&JOY_C) aSpriteSetAnimStep(&demoSpr, 0, 3);
-		//	if(p2&JOY_D) aSpriteSetAnimStep2(&demoSpr, 0, 3);
-
-		aSpriteSetPos(&demoSpr,x,y);
-
-		if(way1==JOY_UP) {
-			aSpriteMove(&demoSpr2,0,2);
-			if(demoSpr2.posY>220) way1=JOY_DOWN;
-		} else {
-			aSpriteMove(&demoSpr2,0,-2);
-			if(demoSpr2.posY<90) way1=JOY_UP;
-		}
-		if(way2==JOY_UP) {
-			aSpriteMove(&demoSpr3,0,1);
-			if(demoSpr3.posY>220) way2=JOY_DOWN;
-		} else {
-			aSpriteMove(&demoSpr3,0,-1);
-			if(demoSpr3.posY<90) way2=JOY_UP;
-		}
-
-		#ifdef POOL_MODE
-		sortSprites((aSprite**)&drawTable[1],sortSize);
-		jobMeterColor(JOB_PINK);
-
-		//if(p1&JOY_A)
-		//	spritePoolDrawList2(&testPool,testPool.way==WAY_UP?(void*)&drawTable[1]:(void*)drawTablePtr);
-		//else spritePoolDrawList(&testPool,testPool.way==WAY_UP?(void*)&drawTable[1]:(void*)drawTablePtr);
-		spritePoolDrawList(&testPool,testPool.way==WAY_UP?(void*)&drawTable[1]:(void*)drawTablePtr);
-
-		#else
-		aSpriteAnimate(&demoSpr);
-		aSpriteAnimate(&demoSpr2);
-		aSpriteAnimate(&demoSpr3);
-		#endif
-
-		//aSprite debug info
-		if(showdebug) {
-			jobMeterColor(JOB_BLACK);
-			if(!(demoSpr.flags&AS_FLAG_STRICT_COORDS)) {
-				if(demoSpr.currentFlip&FLIP_X) relX=x-((demoSpr.currentFrame->tileWidth<<4)+demoSpr.currentStep->shiftX)+1;
-					else relX=x+demoSpr.currentStep->shiftX;
-				if(demoSpr.currentFlip&FLIP_Y) relY=y-((demoSpr.currentFrame->tileHeight<<4)+demoSpr.currentStep->shiftY)+1;
-					else relY=y+demoSpr.currentStep->shiftY;
-			} else {
-				relX=demoSpr.posX;
-				relY=demoSpr.posY;
-			}
-			SC234Put(VRAM_POSX_ADDR(200),VRAM_POSX(x-3));
-			SC234Put(VRAM_POSY_ADDR(200),VRAM_POSY(y-3,SPR_UNLINK,1));
-			SC234Put(VRAM_POSX_ADDR(201),VRAM_POSX(relX));
-			SC234Put(VRAM_POSY_ADDR(201),VRAM_POSY(relY,SPR_UNLINK,1));
-			SC234Put(VRAM_POSX_ADDR(202),VRAM_POSX(relX+((demoSpr.currentFrame->tileWidth-1)<<4)));
-			SC234Put(VRAM_POSY_ADDR(202),VRAM_POSY(relY,SPR_UNLINK,1));
-			SC234Put(VRAM_POSX_ADDR(203),VRAM_POSX(relX));
-			SC234Put(VRAM_POSY_ADDR(203),VRAM_POSY(relY+((demoSpr.currentFrame->tileHeight-1)<<4),SPR_UNLINK,1));
-			SC234Put(VRAM_POSX_ADDR(204),VRAM_POSX(relX+((demoSpr.currentFrame->tileWidth-1)<<4)));
-			SC234Put(VRAM_POSY_ADDR(204),VRAM_POSY(relY+((demoSpr.currentFrame->tileHeight-1)<<4),SPR_UNLINK,1));
-
-			//debug live update prints = 1 frame ahead. meh.
-			jobMeterColor(JOB_GREY);
-			fixPrintf1(3,25,2,3,"Anim data: A:%02d S:%02d R:%02d   ",demoSpr.currentAnim,demoSpr.stepNum,demoSpr.repeats);
-			fixPrintf1(3,26,2,3,"Step data: Frame:0x%06x",bmary_spr.anims[demoSpr.currentAnim][demoSpr.stepNum].frame);
-			fixPrintf1(14,27,2,3,"SX:%04d SY:%04d D:%02d",
-				bmary_spr.anims[demoSpr.currentAnim][demoSpr.stepNum].shiftX,
-				bmary_spr.anims[demoSpr.currentAnim][demoSpr.stepNum].shiftY,
-				bmary_spr.anims[demoSpr.currentAnim][demoSpr.stepNum].duration
-			);
-			fixPrintf1(2,28,2,3,"Frame data: W:%02d H:%02d TMAP:0x%06x",
-				((sprFrame*)(bmary_spr.anims[demoSpr.currentAnim][demoSpr.stepNum].frame))->tileWidth,
-				((sprFrame*)(bmary_spr.anims[demoSpr.currentAnim][demoSpr.stepNum].frame))->tileHeight,
-				((sprFrame*)(bmary_spr.anims[demoSpr.currentAnim][demoSpr.stepNum].frame))->maps[demoSpr.currentFlip]
-			);
-		}
-
-		#ifdef POOL_MODE
-		spritePoolClose(&testPool);
-		#endif
-
-		jobMeterColor(JOB_GREEN);
-	}
-}
+void aSpriteDemo()
+{}
 
 const char sinTable[]={	32,34,35,37,38,40,41,43,44,46,47,48,50,51,52,53,
 						55,56,57,58,59,59,60,61,62,62,63,63,63,64,64,64,
@@ -412,11 +108,80 @@ const char sinTable[]={	32,34,35,37,38,40,41,43,44,46,47,48,50,51,52,53,
 						0,0,0,0,1,1,1,2,2,3,4,5,5,6,7,8,
 						9,11,12,13,14,16,17,18,20,21,23,24,26,27,29,30};
 
+void seafighter()
+{
+	int x=94+48;
+	int y=54;
+	picture seafighter_ship;
+	ushort tableShift=0;
+	ushort flipMode=0;
+
+	clearFixLayer();
+	backgroundColor(0x7bbb);
+	initGfx();
+	jobMeterSetup(true);
+
+	LSPCmode=0x1c00;
+	loadTIirq(TI_MODE_SINGLE_DATA);
+
+	pictureInit(&seafighter_ship, &seafighterh02, 1, 50, x, y,FLIP_NONE);
+	palJobPut(50,seafighterh02.palInfo->count,seafighterh02.palInfo->data);
+
+	fixPrint(2,3,4,3,"1P \x12\x13\x10\x11: move picture");
+	fixPrint(2,4,4,3,"1P A+\x12\x13\x10\x11: flip mode");
+
+	while(1) {
+		SCClose();
+		waitVBlank();
+
+		ps=volMEMBYTE(PS_CURRENT);
+		p1=volMEMBYTE(P1_CURRENT);
+		p1e=volMEMBYTE(P1_EDGE);
+
+		if(ps&P1_START) {
+			clearSprites(1, seafighterh02.tileWidth);
+			TInextTable=0;
+			SCClose();
+			waitVBlank();
+			unloadTIirq();
+			return;
+		}
+
+		while((volMEMWORD(0x3c0006)>>7)!=0x120); //wait raster line 16
+		jobMeterColor(JOB_BLUE);
+
+		if(p1&JOY_A) {
+			if(p1e&JOY_UP)		flipMode|=FLIP_Y;
+			if(p1e&JOY_DOWN)	flipMode&=~FLIP_Y;
+			if(p1e&JOY_RIGHT)	flipMode|=FLIP_X;
+			if(p1e&JOY_LEFT)	flipMode&=~FLIP_X;
+		} else {
+			if(p1&JOY_UP)		y--;
+			if(p1&JOY_DOWN)		y++;
+			if(p1&JOY_LEFT)		x--;
+			if(p1&JOY_RIGHT)	x++;
+		}
+
+		pictureSetFlip(&seafighter_ship,flipMode);
+		pictureSetPos(&seafighter_ship, x, y);
+
+
+//			SC234Put(rasterAddr,VRAM_POSX(x)); //restore position
+			TInextTable=0;
+
+
+		tableShift++;
+		jobMeterColor(JOB_GREEN);
+	}
+
+}
+
 void pictureDemo() {
 	int x=94+48;
 	int y=54;
 	int i,j;
 	picture testPict;
+	picture seafighter_ship;
 	//Picture gradientPict;
 	ushort raster=false;
 	ushort tableShift=0;
@@ -437,6 +202,10 @@ void pictureDemo() {
 
 	pictureInit(&testPict, &terrypict,1, 16, x, y,FLIP_NONE);
 	palJobPut(16,terrypict.palInfo->count,terrypict.palInfo->data);
+
+	pictureInit(&seafighter_ship, &seafighterh02, 1, 50, x+20, y,FLIP_NONE);
+  palJobPut(50,seafighterh02.palInfo->count,seafighterh02.palInfo->data);
+
 
 	rasterAddr=0x8400+testPict.baseSprite;
 
@@ -742,78 +511,6 @@ void desertRaster(void) {
 	}
 }
 
-void tempTests() {
-	int x=0;
-	int y=0;
-	int c;
-	uint *ptr;
-	scroller scroll;
-
-	backgroundColor(0x7bbb);
-	clearFixLayer();
-	initGfx();
-	jobMeterSetup(true);
-
-	scrollerInit(&scroll, &wohd, 1, 16, x, y);
-	palJobPut(16, wohd.palInfo->count, wohd.palInfo->data);
-
-	//fixPrintf1(2,3,4,3,"0x%06x",&scroll);
-	//dbg init
-	scroll.config[23+4]=scroll.config[23+5]=scroll.config[23+6]=scroll.config[23+7]=scroll.config[23+8]=0;
-
-	while(1) {
-		SCClose();
-		waitVBlank();
-
-		p1=volMEMBYTE(P1_CURRENT);
-		p1e=volMEMBYTE(P1_EDGE);
-		ps=volMEMBYTE(PS_CURRENT);
-
-		if((ps&P1_START)&&(ps&P2_START)) {
-			clearSprites(1, 21);
-			SCClose();
-			waitVBlank();
-			return;
-		}
-
-		if(p1&JOY_UP)		y--;
-		if(p1&JOY_DOWN)		y++;
-		if(p1&JOY_LEFT)		x--;
-		if(p1&JOY_RIGHT)	x++;
-
-		while((volMEMWORD(0x3c0006)>>7)!=0x120); //wait raster line 16
-		jobMeterColor(JOB_BLUE);
-
-		if(p1e&JOY_D)
-			scrollerInit(&scroll, &wohd, 1, 16, x, y);
-
-		if(p1&JOY_A) scrollerSetPos(&scroll, x, y);
-
-		jobMeterColor(JOB_GREEN);
-		fixPrintf2(2,4,4,3,"%04d\xff%04d\xff\xff",x,y);
-
-		fixPrintf2(2,6,2,3,"TileIndex:  %04d ",scroll.config[23+2]);
-		fixPrintf2(2,7,2,3,"DataIndex:  %04d ",scroll.config[23+1]);
-		fixPrintf2(2,8,2,3,"DataLength: %04d ",scroll.config[23+3]);
-		fixPrintf2(2,9,2,3,"DataIndex2: %04d ",scroll.config[23+0]);
-
-		fixPrintf2(2,11,2,3,"TileIndex:  %04d ",scroll.config[23+4]);
-		fixPrintf2(2,12,2,3,"DataIndex:  %04d ",scroll.config[23+5]);
-		fixPrintf2(2,13,2,3,"DataLength: %04d ",scroll.config[23+6]);
-		fixPrintf2(2,14,2,3,"DataIndex2: %04d ",scroll.config[23+7]);
-		fixPrintf2(2,15,2,3,"DataLength2:%04d ",scroll.config[23+8]);
-		fixPrintf2(2,16,2,3,"RefillSize: %04d ",scroll.config[23+6]+scroll.config[23+8]);
-
-		c=0;
-		ptr=SC1;
-		while(ptr!=SC1ptr) {
-			c+=(*ptr++)&0x3fc0000;
-			ptr++;
-		}
-		c>>=18;
-		fixPrintf1(2,18,2,3,"Jobs: %04d/%04d",(SC234ptr-SC234)>>1,c);
-	}
-}
 
 //misc fix maps
 static const ushort fadeData0[15]={0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x0000};
@@ -994,129 +691,19 @@ void fixDemo() {
 	}
 }
 
-void colorStreamDemoA() {
-	scroller sc;
-	colorStream stream;
-	short posX=0;
-	short posY=0;
-	uint *plj;
-	ushort lastJobs=0,jobs=0;
+void colorStreamDemoA()
+{}
 
-	clearFixLayer();
-	scrollerInit(&sc,&streamScroll,1,16,0,0);
-	colorStreamInit(&stream,&streamScroll_colorStream,16,COLORSTREAM_STARTCONFIG);
-
-	fixPrint(2,3,4,3,"1P \x10\x11: scroll");
-
-	while(1) {
-		SCClose();
-
-		//check palJobs load
-		if(jobs!=0)	lastJobs=jobs;
-		jobs=0;
-		plj=PALJOBS;
-		while(*plj!=0xffffffff) {
-			jobs+=((*plj++)>>16)+1;
-			plj++;
-		}
-		//fixPrintf1(0,2,3,3,"Jobs:%d (last:%d)   ",jobs,lastJobs);
-
-		waitVBlank();
-
-		p1=volMEMBYTE(P1_CURRENT);
-		ps=volMEMBYTE(PS_CURRENT);
-		p1e=volMEMBYTE(P1_EDGE);
-
-		if(ps&P1_START) {
-			clearSprites(1,21);
-			SCClose();
-			waitVBlank();
-			return;
-		}
-
-		if(p1&JOY_B) {
-			if(p1e&JOY_LEFT)	posX-=64;
-			if(p1e&JOY_RIGHT)	posX+=64;
-		} else {
-			if(p1&JOY_LEFT)		posX-=p1&JOY_A?8:1;
-			if(p1&JOY_RIGHT)	posX+=p1&JOY_A?8:1;
-		}
-		if(posX<0) posX=0;
-		if(posX>(streamScroll.mapWidth-20)<<4) posX=(streamScroll.mapWidth-20)<<4;
-
-		//fixPrintf1(0,1,3,3,"%d    ",posX);
-
-		scrollerSetPos(&sc,posX,posY);
-		colorStreamSetPos(&stream,posX);
-	}
-}
-
-void colorStreamDemoB() {
-	scroller sc;
-	colorStream stream;
-	short posX=0;
-	short posY=0;
-	uint *plj;
-	ushort lastJobs=0,jobs=0;
-
-
-	clearFixLayer();
-	scrollerInit(&sc,&SNKLogoStrip,1,16,0,0);
-	colorStreamInit(&stream,&SNKLogoStrip_colorStream,16,COLORSTREAM_STARTCONFIG);
-
-	fixPrint(2,3,4,3,"1P \x12\x13: scroll");
-	fixPrint(2,29,6,3,"(Sequence formatted by MegaShocked)");
-
-	while(1) {
-		SCClose();
-
-		//check palJobs load
-		if(jobs!=0)	lastJobs=jobs;
-		jobs=0;
-		plj=PALJOBS;
-		while(*plj!=0xffffffff) {
-			jobs+=((*plj++)>>16)+1;
-			plj++;
-		}
-		//fixPrintf1(0,2,3,3,"Jobs:%d (last:%d)   ",jobs,lastJobs);
-
-		waitVBlank();
-
-		p1=volMEMBYTE(P1_CURRENT);
-		ps=volMEMBYTE(PS_CURRENT);
-		p1e=volMEMBYTE(P1_EDGE);
-
-		if(ps&P1_START) {
-			clearSprites(1,21);
-			SCClose();
-			waitVBlank();
-			return;
-		}
-
-		if(p1&JOY_B) {
-			if(p1e&JOY_UP)	posY-=224;
-			if(p1e&JOY_DOWN)posY+=224;
-		} else {
-			if(p1&JOY_UP)	posY-=p1&JOY_A?224:1;
-			if(p1&JOY_DOWN) posY+=p1&JOY_A?224:1;
-		}
-		if(posY<0) posY=0;
-		if(posY>(SNKLogoStrip.mapHeight-14)<<4) posY=(SNKLogoStrip.mapHeight-14)<<4;
-
-		//fixPrintf1(0,1,3,3,"%d    ",posY);
-
-		scrollerSetPos(&sc,posX,posY);
-		colorStreamSetPos(&stream,posY);
-	}
-}
+void colorStreamDemoB()
+{}
 
 void testCallBack() {
 	if(volMEMBYTE(P1_EDGE)&JOY_A)
 		callBackCounter++;
 }
 
-#define	CURSOR_MAX	7
-static const uint demos[]={(uint)pictureDemo,(uint)scrollerDemo,(uint)aSpriteDemo,(uint)fixDemo,(uint)rasterScrollDemo,(uint)desertRaster,(uint)colorStreamDemoA,(uint)colorStreamDemoB};
+#define	CURSOR_MAX	2
+static const uint demos[]={(uint)pictureDemo,(uint)seafighter,(uint)aSpriteDemo,(uint)fixDemo,(uint)rasterScrollDemo,(uint)desertRaster,(uint)colorStreamDemoA,(uint)colorStreamDemoB};
 
 int main(void) {
 	ushort cursor=0;
@@ -1163,15 +750,9 @@ int main(void) {
 
 		fixPrintf1(0,3,1,3,"CB counter:%d",callBackCounter);
 		fixPrint(8,10,cursor==0?2:4,3,"Picture demo");
-		fixPrint(8,11,cursor==1?2:4,3,"Scroller demo");
-		fixPrint(8,12,cursor==2?2:4,3,"Animated sprite demo");
-		fixPrint(8,13,cursor==3?2:4,3,"Fix layer demo");
-		fixPrint(8,14,cursor==4?2:4,3,"Raster demo A");
-		fixPrint(8,15,cursor==5?2:4,3,"Raster demo B");
-		fixPrint(8,16,cursor==6?2:4,3,"Color stream demo A");
-		fixPrint(8,17,cursor==7?2:4,3,"Color stream demo B");
+		fixPrint(8,11,cursor==1?2:4,3,"Seafighter");
+		fixPrint(8,12,cursor==2?2:4,3,"Options");
 
 		fixPrint(8,20,4,3,"(P1 START - Menu return)");
-		fixPrint(8,28,5,3,"DATlib tests - @2018 Hpman");
 	}
 }
