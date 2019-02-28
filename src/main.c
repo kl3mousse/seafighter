@@ -1,15 +1,982 @@
-/***********************************************************************************
-		SEA FIGHTER
-		a clone of NEO THUNDER (Sebastian Mihai, 2011 (http://www.sebastianmihai.com))
-		"Long live the Neogeo!"
-***********************************************************************************/
+/***************************************/
+/* Seafighter by Kl3mousse             */
+/* for NEO GEO                         */
+/***************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <DATlib.h>
 #include <input.h>
-#include "..\gfxout\charInclude.h"
-#include "..\gfxout\fixData.h"
+#include <DATlib.h>
+#include "..\gfxout\charInclude.h" // include sprite metadata from DATlib
+#include "..\gfxout\fixData.h"     // include fix metadata from DATlib
+
+void sf_init(void);
+void sf_demomode(void);
+
+
+typedef struct bkp_ram_info
+{
+	WORD debug_dips;
+	//	256 bytes backup block
+	//	BYTE save_slot[254];
+	//	WORD save_slot[126];
+		DWORD save_slot[62];
+}
+bkp_ram_info;
+bkp_ram_info bkp_data;
+
+BYTE p1,p2,ps,p1e,p2e;
+
+typedef struct global_init
+{
+	int user_request_0_flag;
+	int aes_init_flag;
+	int aes_soft_dip_lives, aes_soft_dip_continues, aes_soft_dip_difficulty;
+}
+
+global_init;
+global_init global_data;
+
+
+static const char LetterList[30][3] =
+{
+    " \0","A\0","B\0","C\0","D\0","E\0","F\0","G\0","H\0","I\0",
+    "J\0","K\0","L\0","M\0","N\0","O\0","P\0","Q\0","R\0","S\0",
+    "T\0","U\0","V\0","W\0","X\0","Y\0","Z\0",":\0","!\0","<\0"
+};
+
+// function prototypes
+int convertHexToDecimal(int hexadecimal);
+void displayRanking(void);
+void displaySoftDipsMVS(void);
+void displaySoftDipsAES(void);
+void playerStartAES(void);
+
+// main loop ////////////////////////////////////////////////////////////////////
+
+void USER(void)
+{
+	int demo_timer=600;
+	int flash_timer=0;
+	int P1_continue_timer=0;
+	int P2_continue_timer=0;
+	int P1_game_over_timer=0;
+	int P2_game_over_timer=0;
+	int P1_input_delay=0;
+	int P2_input_delay=0;
+	int AES_user_mode=0;
+	int AES_P1_credits=0;
+	int AES_P2_credits=0;
+	int AES_P1_state=0;
+	int AES_P2_state=0;
+
+	LSPCmode=0x900;
+
+	initGfx();
+	clearFixLayer();
+	clearSprites(1, 381);
+		sf_init();
+	SCClose();
+
+
+
+	while(1)
+	{
+		waitVBlank();
+		SCClose();
+		p1=volMEMBYTE(P1_CURRENT); // read P1 inputs
+		p2=volMEMBYTE(P2_CURRENT); // read P2 inputs
+		ps=volMEMBYTE(PS_CURRENT); // read START button inputs
+
+		flash_timer+=1;
+		if(flash_timer == 60) flash_timer=0;
+
+		// INIT MODE /////////////////////////////////////////////////////////////////////////////////////////
+
+
+		if(volMEMBYTE(0x10FDAE)==0) // user_request=0 is called by BIOS
+		{
+			// is called by BIOS if given NGH number has not been found into backup RAM (MVS system)
+			// only executed once if game is installed the first time into the MVS system
+			// is always executed in simulated MVS-Mode on AES systems with Uni-Bios
+
+			// if MVS system has been detected:
+			// initial load of default SOFT_DIP data from JPConfig,	USConfig, EUConfig
+			// initial setup of the backup RAM save pointer (game data like rankings can be saved in this loaction)
+
+			waitVBlank();
+			global_data.user_request_0_flag=1; // indicates that user_request=0 has been executed
+
+			// initial load of default ranking data
+
+			// high scores
+			bkp_data.save_slot[0]=18000000;
+			bkp_data.save_slot[1]=14000000;
+			bkp_data.save_slot[2]=12000000;
+			bkp_data.save_slot[3]=10800000;
+			bkp_data.save_slot[4]=10400000;
+			bkp_data.save_slot[5]=10200000;
+			bkp_data.save_slot[6]=10080000;
+			bkp_data.save_slot[7]=10040000;
+			bkp_data.save_slot[8]=10020000;
+			bkp_data.save_slot[9]=10008000;
+
+			// three letter names
+			bkp_data.save_slot[10]=11200824;
+			bkp_data.save_slot[11]=11081600;
+			bkp_data.save_slot[12]=11130114;
+			bkp_data.save_slot[13]=11282828;
+			bkp_data.save_slot[14]=11140515;
+			bkp_data.save_slot[15]=11070515;
+			bkp_data.save_slot[16]=11132219; // MVS
+			bkp_data.save_slot[17]=11201516;
+			bkp_data.save_slot[18]=11200514;
+			bkp_data.save_slot[19]=11181411;
+
+			break;  // exit loop and call BIOSF_SYSTEM_RETURN (tells the system that the INIT MODE has been finished)
+		}
+
+		if(volMEMBYTE(0x10FD82)==0 && global_data.aes_init_flag==0) // AES system detected && only executed once upon system start
+		{
+			// always loads default SOFT DIP data and default ranking data when AES system starts since there is no backup RAM
+			// all data will be lost if AES system is turned off
+			waitVBlank();
+			global_data.aes_init_flag=1; // set flag to avoid multible inits after BIOSF_SYSTEM_RETURN
+
+			// initial load of default AES soft dip data
+
+			global_data.aes_soft_dip_lives=5;
+			global_data.aes_soft_dip_continues=4;
+			global_data.aes_soft_dip_difficulty=3;
+
+			break;  // exit loop and call BIOSF_SYSTEM_RETURN (tells the system that the INIT MODE has been finished)
+		}
+
+		// DEMO MODE MVS/AES /////////////////////////////////////////////////////////////////////////////////////////
+
+		if(volMEMBYTE(0x10FDAE)==2 && volMEMBYTE(0x10FDAF)==1) // bios_user_request=2, bios_user_mode=1
+		{
+			volMEMWORD(0x401ffe)=0x7022; // background color
+			volMEMWORD(0x400002)=0x79BB; // fix layer font color
+			volMEMWORD(0x400004)=0x7022; // fix layer background color
+
+			fixPrintf( 2, 4,0,0,"============ DEMO MODE ============= ");
+			fixPrintf( 2, 5,0,0,"TIMER: %02d",	demo_timer/60);
+
+			sf_demomode();
+// 			fixPrintf( 2, 6,0,0,"%08d",	bkp_data.save_slot[9]);
+
+
+			// MVS BIOS /////////////////////////////////////////////
+			if(volMEMBYTE(0x10FD82)>0)
+			{
+				if(demo_timer==600)
+				{
+					fixPrintf(15, 5,0,0,"-- MVS --");
+					displayRanking(); 	  // ranking table
+					displaySoftDipsMVS(); // MVS soft dips
+
+					// fill AES soft dips with MVS soft dip data (for MVS free play mode)
+					global_data.aes_soft_dip_lives		=	volMEMBYTE(0x10FD88);  // MVS SOFT DIP 5 (LIVES)
+					global_data.aes_soft_dip_continues	=	volMEMBYTE(0x10FD89);  // MVS SOFT DIP 6 (CONTINUES)
+					global_data.aes_soft_dip_difficulty	=	volMEMBYTE(0x10FD8A);  // MVS SOFT DIP 7 (DIFFICULTY)
+				}
+
+				if(flash_timer>30)	fixPrintf(14, 8,0,0,"INSERT COIN");
+				else				fixPrintf(14, 8,0,0,"           ");
+			}
+
+
+			// AES BIOS /////////////////////////////////////////////
+			if(volMEMBYTE(0x10FD82)==0)
+			{
+				if(demo_timer==600)
+				{
+					fixPrintf(15, 5,0,0,"-- AES --");
+					displayRanking(); 	  // ranking table
+					displaySoftDipsAES(); // AES soft dips
+					AES_P1_credits=global_data.aes_soft_dip_continues; // add virtual credits
+					AES_P2_credits=global_data.aes_soft_dip_continues; // add virtual credits
+				}
+
+				if(flash_timer>30)	fixPrintf(14, 8,0,0,"PRESS START");
+				else				fixPrintf(14, 8,0,0,"           ");
+			}
+
+			// DEMO END /////////////////////////////////////////////
+
+			demo_timer-=1;
+			if(demo_timer==0)
+			{
+				clearFixLayer();
+				break; // exit loop and call BIOSF_SYSTEM_RETURN (tells the system that the DEMO MODE has been finished, calls DEMO_END function)
+			}
+		}
+
+		// TITLE MODE MVS ////////////////////////////////////////////////////////////////////////////////////////
+
+		if(volMEMBYTE(0x10FDAE)==3 && volMEMBYTE(0x10FDAF)==1) // bios_user_request=3, bios_user_mode=1
+		{
+			volMEMBYTE(0x10FEC5)=0x01; // BIOS_COMPULSION_FLAG prevents that compulsion doesn't restart twice, if still credits available from previous gameplay
+
+			volMEMWORD(0x401ffe)=0x1351; // background color
+			volMEMWORD(0x400002)=0x6BDA; // fix layer font color
+			volMEMWORD(0x400004)=0x1351; // fix layer background color
+
+			fixPrintf( 2, 4,0,0,"============ TITLE MVS =============");
+			fixPrintf(16, 9,0,0,"TIME:%02d", convertHexToDecimal(volMEMBYTE(0x10FDDA))); // BIOS-COMPULSION-TIMER - timer for forced game start
+
+			if(flash_timer>30)	fixPrintf(14,11,0,0,"PRESS START!");
+			else				fixPrintf(14,11,0,0,"            ");
+
+			// display credit counter(s) ////////////////////////////////////
+
+			if(volMEMBYTE(0x10FE80)>0) // if developer mode is active, display dev mode credit counters
+			{
+				fixPrintf( 2,23,0,0,"DevCRED P1: %02d", convertHexToDecimal(volMEMBYTE(0x10FE00))); // dev mode credit counter P1
+				// display separete P2 credit counter if BIOS-COUNTRY-CODE is 1=USA
+				if(volMEMBYTE(0x10FD83)==1) fixPrintf(24,23,0,0,"DevCRED P2: %02d", convertHexToDecimal(volMEMBYTE(0x10FE01)));  // dev mode credit counter P2
+
+			}else{
+
+
+				fixPrintf( 2,23,0,0,"CREDITS P1: %02d", convertHexToDecimal(volMEMBYTE(0xD00034)));  // credit counter P1
+				// fixPrintf( 2,22,0,0,"DevCRED P1: %02d", convertHexToDecimal(volMEMBYTE(0x10FE00)));  // dev mode credit counter P1
+				// display separete P2 credit counter if BIOS-COUNTRY-CODE is 1=USA
+				if(volMEMBYTE(0x10FD83)==1) fixPrintf(24,23,0,0,"CREDITS P2: %02d", convertHexToDecimal(volMEMBYTE(0xD00035)));	// credit counter P2
+				// if(volMEMBYTE(0x10FD83)==1) fixPrintf(24,22,0,0,"DevCRED P2: %02d", convertHexToDecimal(volMEMBYTE(0x10FE01)));	// dev mode credit counter P2
+			}
+
+		}
+
+		// TITLE MODE AES ////////////////////////////////////////////////////////////////////////////////////////
+		// the AES title mode is also used by MVS in "free play" mode (hard dip switch 6 active)
+
+		if(volMEMBYTE(0x10FDAE)==2 && volMEMBYTE(0x10FDAF)==2 && AES_user_mode==0) // bios_user_request=2, bios_user_mode=2
+		{
+			AES_user_mode=1;		// change to title mode
+			volMEMBYTE(0x10FDB4)=0;	// reset input flag
+			volMEMBYTE(0x10FDB6)=0;	// change BIOS-PLAYER-MOD1 to 0 (P1 never played)
+			volMEMBYTE(0x10FDB7)=0;	// change BIOS-PLAYER-MOD2 to 0 (P2 never played)
+		}
+
+		if(AES_user_mode==1)
+		{
+			fixPrintf( 2, 4,0,0,"============ TITLE AES =============");
+
+			if(flash_timer>30)	fixPrintf(14, 9,0,0,"PRESS START!");
+			else				fixPrintf(14, 9,0,0,"            ");
+
+			fixPrintf( 2,23,0,0,"CREDITS P1: %02d", AES_P1_credits);
+			fixPrintf(24,23,0,0,"CREDITS P2: %02d", AES_P2_credits);
+
+			//  Player 1 has started the game from the title mode
+			if(volMEMBYTE(0x10FDB6)==1 && volMEMBYTE(0x10FDB4)==1) // BIOS-PLAYER-MOD1 == 1 (P1 playing) && START_FLAG == 1
+			{
+				if(volMEMBYTE(0x10FD82)==0) AES_P1_credits-=1; 	// decrement virtual P1 credit if system is AES
+				AES_P1_state=1;		// set P1 state to 1 (playing)
+				AES_user_mode=2;	// change to game mode
+				clearFixLayer();	// clear title screen
+			}
+
+			//  Player 2 has started the game from the title mode
+			if(volMEMBYTE(0x10FDB7)==1 && volMEMBYTE(0x10FDB4)==2) // BIOS-PLAYER-MOD2 == 1 (P2 playing) && START_FLAG == 2
+			{
+				if(volMEMBYTE(0x10FD82)==0) AES_P2_credits-=1;	// decrement virtual P2 credit if system is AES
+				AES_P2_state=1;		// set P2 state to 1 (playing)
+				AES_user_mode=2;	// change to game mode
+				clearFixLayer();	// clear title screen
+			}
+		}
+
+		// GAME MODE AES /////////////////////////////////////////////////////////////////////////////////////////
+		//  the AES title mode is also used by MVS in "free play" mode (hard dip switch 6 active)
+
+		if(AES_user_mode==2)
+		{
+			volMEMWORD(0x401ffe)=0x5872; // background color
+			volMEMWORD(0x400002)=0x4ED9; // fix layer font color
+			volMEMWORD(0x400004)=0x5872; // fix layer background color
+
+			fixPrintf( 2, 4,0,0,"============ GAME AES  ============= ");
+			fixPrintf( 2,23,0,0,"CREDITS P1: %02d", AES_P1_credits);
+			fixPrintf(24,23,0,0,"CREDITS P2: %02d", AES_P2_credits);
+
+			// join game ///////////////////////////////////////////////////////////////
+
+			// Player 1 ////////////////////////////////////////////////////////////////
+			if(AES_P1_state==0)  // AES_P1_state 0 = P1 never played
+			{
+				if(AES_P1_credits>0 || volMEMBYTE(0x10FD82)>0)  // join P2 game if P1 credits available or if MVS free play mode is active
+				{
+					fixPrintf( 4, 6,0,0,"JOIN GAME   ");
+					fixPrintf( 3, 9,0,0,"PRESS START ");
+
+					if(ps&P1_START)
+					{
+						AES_P1_state=1;		// set AES_P1_state to 1 (P1 playing)
+						if(volMEMBYTE(0x10FD82)==0) AES_P1_credits-=1; 	// decrement virtual P1 credit if system is AES
+					}
+				}
+
+				if(AES_P1_credits==0 && volMEMBYTE(0x10FD82)==0) // P1 cant play anymore if no P1 credits available and if system is AES
+				{
+					fixPrintf( 4, 6,0,0,"GAME OVER   ");
+				}
+			}
+
+			// Player 2 ///////////////////////////////////////////////////////////////////
+			if(AES_P2_state==0)  // AES_P2_state 0 = P2 never played
+			{
+				if(AES_P2_credits>0 || volMEMBYTE(0x10FD82)>0)  // join P1 game if P2 credits available or if MVS free play mode is active
+				{
+					fixPrintf(26, 6,0,0,"JOIN GAME   ");
+					fixPrintf(25, 9,0,0,"PRESS START ");
+
+					if(ps&P2_START)
+					{
+						AES_P2_state=1;		// set AES_P2_state to 1 (P2 playing)
+						if(volMEMBYTE(0x10FD82)==0) AES_P2_credits-=1; 	// decrement virtual P2 credit if system is AES
+					}
+				}
+
+				if(AES_P2_credits==0 && volMEMBYTE(0x10FD82)==0) // P2 cant play anymore if no P2 credits available and if system is AES
+				{
+					fixPrintf(26, 6,0,0,"GAME OVER   ");
+				}
+			}
+
+			// playing /////////////////////////////////////////////////////////////////
+
+			// Player 1 ////////////////////////////////////////////////////////////////
+			if(AES_P1_state==1) // AES_P1_state 1 = P1 playing
+			{
+				fixPrintf( 4, 6,0,0,"PLAYING  ");
+				fixPrintf( 3, 9,0,0,"P1 PRESS A ");
+
+				if(p1&JOY_A)
+				{
+					if(AES_P1_credits>0 || volMEMBYTE(0x10FD82)>0)  // start continue timer if P1 credits available or if MVS free play mode
+					{
+						P1_continue_timer=600;	// start P1 continue timer
+						AES_P1_state=2;			// set AES_P1_state to 2 (P1 Continue Option)
+						clearFixLayer();		// clear message
+					}
+
+					if(AES_P1_credits==0 && volMEMBYTE(0x10FD82)==0) // start game over timer if no P1 credits available if system is AES
+					{
+						P1_game_over_timer=300;	// start P1 game_over_timer
+						AES_P1_state=3;			// set AES_P1_state to 3 (P1 Game Over)
+						clearFixLayer();		// clear message
+					}
+				}
+			}
+
+			// Player 2 ///////////////////////////////////////////////////////////////////
+			if(AES_P2_state==1) // AES_P2_state 1 = P2 playing
+			{
+				fixPrintf(26, 6,0,0,"PLAYING  ");
+				fixPrintf(25, 9,0,0,"P2 PRESS A ");
+
+				if(p2&JOY_A)
+				{
+					if(AES_P2_credits>0 || volMEMBYTE(0x10FD82)>0)  // start continue timer if P2 credits available or if MVS free play mode
+					{
+						P2_continue_timer=600;	// start P2 continue timer
+						AES_P2_state=2;			// set AES_P2_state to 2 (P2 Continue Option)
+						clearFixLayer();		// clear message
+					}
+
+					if(AES_P2_credits==0 && volMEMBYTE(0x10FD82)==0) // start game over timer if no P2 credits available if system is AES
+					{
+						P2_game_over_timer=300;	// start P2 game_over_timer
+						AES_P2_state=3;			// set AES_P2_state to 3 (P2 Game Over)
+						clearFixLayer();		// clear message
+					}
+				}
+			}
+
+			// continue timer //////////////////////////////////////////////////////////
+
+			// Player 1 ////////////////////////////////////////////////////////////////
+			if(P1_continue_timer>0)
+			{
+				P1_continue_timer-=1;
+
+				if(P1_input_delay==0 && P1_continue_timer>60) // speed up timer if C is pressed
+				{
+					if(p1&JOY_C)
+					{
+						P1_continue_timer-=60;
+						P1_input_delay=10;
+					}
+				}
+
+				fixPrintf( 4, 6,0,0,"CONTINUE?"); // BIOS-PLAYER-MOD1 2 = continue
+				fixPrintf( 7, 7,0,0,"%02d", P1_continue_timer/60); // show timer
+				fixPrintf( 3, 9,0,0,"PRESS START ");
+
+				if(P1_continue_timer==0) // Player 1 has not pressed START, start game_over_timer
+				{
+					AES_P1_state=3;  		// sets BIOS-PLAYER-MOD1 to 3 (P1 Game Over)
+					P1_game_over_timer=300;	// start game_over_timer
+					clearFixLayer();		// clear message
+				}
+
+				if(ps&P1_START)	// Player 1 has pressed START - continue game
+				{
+					AES_P1_state=1;			// set AES_P1_state to 1 (P1 playing)
+					if(volMEMBYTE(0x10FD82)==0) AES_P1_credits-=1; 	// decrement virtual P1 credit if system is AES
+					P1_continue_timer=0;	// reset timer
+					clearFixLayer();		// clear message
+				}
+			}
+
+			// Player 2 ///////////////////////////////////////////////////////////////////
+			if(P2_continue_timer>0)
+			{
+				P2_continue_timer-=1;
+
+				if(P2_input_delay==0 && P2_continue_timer>60) // speed up timer if C is pressed
+				{
+					if(p2&JOY_C)
+					{
+						P2_continue_timer-=60;
+						P2_input_delay=10;
+					}
+				}
+
+				fixPrintf(26, 6,0,0,"CONTINUE?");
+				fixPrintf(29, 7,0,0,"%02d", P2_continue_timer/60); // show timer
+				fixPrintf(25, 9,0,0,"PRESS START ");
+
+				if(P2_continue_timer==0) // Player 2 has not pressed START, start game_over_timer
+				{
+					AES_P2_state=3;  // sets BIOS-PLAYER-MOD2 to 3 (P2 Game Over)
+					P2_game_over_timer=300;	// start game_over_timer
+					clearFixLayer();		// clear message
+				}
+
+				if(ps&P2_START) // Player 2 has pressed START - continue game
+				{
+					AES_P2_state=1;			// set AES_P2_state to 1 (P2 playing)
+					if(volMEMBYTE(0x10FD82)==0) AES_P2_credits-=1; 		// decrement virtual P2 credit if system is AES
+					P2_continue_timer=0;	// reset timer
+					clearFixLayer();		// clear message
+				}
+			}
+
+			// game over timer //////////////////////////////////////////////////////////
+
+			// Player 1 ////////////////////////////////////////////////////////////////
+			if(P1_game_over_timer>0)
+			{
+				P1_game_over_timer-=1;
+				fixPrintf( 4, 6,0,0,"GAME OVER  ");
+				fixPrintf( 7, 7,0,0,"%02d", P1_game_over_timer/60);
+
+				if(p1&JOY_B)
+				{
+					bkp_data.save_slot[6]=10123456;  // add score
+					bkp_data.save_slot[16]=11140802; // add name
+				}
+
+				if(P1_game_over_timer==0)
+				{
+					AES_P1_state=0;			// set AES_P1_state to 0 (P1 never played)
+					clearFixLayer();		// clear message
+				}
+			}
+
+			// Player 2 ////////////////////////////////////////////////////////////////
+			if(P2_game_over_timer>0)
+			{
+				P2_game_over_timer-=1;
+				fixPrintf(26, 6,0,0,"GAME OVER  ");
+				fixPrintf(29, 7,0,0,"%02d", P2_game_over_timer/60);
+
+				if(p2&JOY_B)
+				{
+					bkp_data.save_slot[6]=10123456;  // add score
+					bkp_data.save_slot[16]=11140802; // add name
+				}
+
+				if(P2_game_over_timer==0)
+				{
+					AES_P2_state=0;			// set AES_P2_state to 0 (P2 never played)
+					clearFixLayer();		// clear message
+				}
+			}
+
+			if(P1_input_delay>0){P1_input_delay-=1;} // count down input delay
+			if(P2_input_delay>0){P2_input_delay-=1;} // count down input delay
+
+			// exit game mode ////////////////////////////////////////////////////////////////
+
+			if(AES_P1_state==0 && AES_P2_state==0) // Player 1 and Player 2 have no credits or do not want to play
+			{
+				break; // exit loop and call BIOSF_SYSTEM_RETURN (will restart demo mode)
+			}
+		}
+
+		// GAME MODE MVS /////////////////////////////////////////////////////////////////////////////////////////
+
+		if(volMEMBYTE(0x10FDAE)==3 && volMEMBYTE(0x10FDAF)==2) // bios_user_request=3, bios_user_mode=2
+		{
+			volMEMWORD(0x401ffe)=0x5872; // background color
+			volMEMWORD(0x400002)=0x4ED9; // fix layer font color
+			volMEMWORD(0x400004)=0x5872; // fix layer background color
+
+			fixPrintf( 2, 4,0,0,"============ GAME MVS  ============= ");
+
+			// display credit counter(s) ////////////////////////////////////
+
+			if(volMEMBYTE(0x10FE80)>0) // if developer mode is active display dev mode credit counters
+			{
+				fixPrintf( 2,23,0,0,"DevCRED P1: %02d", convertHexToDecimal(volMEMBYTE(0x10FE00))); // dev mode credit counter P1
+				// display separete P2 credit counter if BIOS-COUNTRY-CODE is 1=USA
+				if(volMEMBYTE(0x10FD83)==1) fixPrintf(24,23,0,0,"DevCRED P2: %02d", convertHexToDecimal(volMEMBYTE(0x10FE01)));  // dev mode credit counter P2
+
+			}else{
+
+
+				fixPrintf( 2,23,0,0,"CREDITS P1: %02d", convertHexToDecimal(volMEMBYTE(0xD00034)));  // credit counter P1
+				// fixPrintf( 2,22,0,0,"DevCRED P1: %02d", convertHexToDecimal(volMEMBYTE(0x10FE00)));  // dev mode credit counter P1
+				// display separete P2 credit counter if BIOS-COUNTRY-CODE is 1=USA
+				if(volMEMBYTE(0x10FD83)==1) fixPrintf(24,23,0,0,"CREDITS P2: %02d", convertHexToDecimal(volMEMBYTE(0xD00035)));	// credit counter P2
+				// if(volMEMBYTE(0x10FD83)==1) fixPrintf(24,22,0,0,"DevCRED P2: %02d", convertHexToDecimal(volMEMBYTE(0x10FE01)));	// dev mode credit counter P2
+			}
+
+			// join game ///////////////////////////////////////////////////////////////
+
+			// Player 1 ////////////////////////////////////////////////////////////////
+			if(volMEMBYTE(0x10FDB6)==0)  // BIOS-PLAYER-MOD1 0 = never played
+			{
+				fixPrintf( 4, 6,0,0,"JOIN GAME   ");
+				if(volMEMBYTE(0x10FE00)>0  && volMEMBYTE(0x10FE80)>0)  fixPrintf( 3, 9,0,0,"PRESS START "); // dev P1 credits available && dev-mode active
+				if(volMEMBYTE(0x10FE00)==0 && volMEMBYTE(0x10FE80)>0)  fixPrintf( 3, 9,0,0,"INSERT COIN "); // no dev P1 credits available && dev-mode active
+				if(volMEMBYTE(0xD00034)>0  && volMEMBYTE(0x10FE80)==0) fixPrintf( 3, 9,0,0,"PRESS START "); // regular P1 credits available && dev-mode inactive
+				if(volMEMBYTE(0xD00034)==0 && volMEMBYTE(0x10FE80)==0) fixPrintf( 3, 9,0,0,"INSERT COIN "); // no regular P1 credits available && dev-mode inactive
+			}
+
+			// Player 2 ///////////////////////////////////////////////////////////////////
+			if(volMEMBYTE(0x10FDB7)==0)  // BIOS-PLAYER-MOD2 0 = never played
+			{
+				fixPrintf(26, 6,0,0,"JOIN GAME   ");
+
+				if(volMEMBYTE(0x10FD83)==0 || volMEMBYTE(0x10FD83)==2) // BIOS-COUNTRY-CODE 0=JAP or 2=EUR (single credit counter)
+				{
+					if(volMEMBYTE(0x10FE00)>0  && volMEMBYTE(0x10FE80)>0)  fixPrintf(25, 9,0,0,"PRESS START "); // dev P1 credits available && dev-mode active
+					if(volMEMBYTE(0x10FE00)==0 && volMEMBYTE(0x10FE80)>0)  fixPrintf(25, 9,0,0,"INSERT COIN "); // no dev P1 credits available && dev-mode active
+					if(volMEMBYTE(0xD00034)>0  && volMEMBYTE(0x10FE80)==0) fixPrintf(25, 9,0,0,"PRESS START "); // regular P1 credits available && dev-mode inactive
+					if(volMEMBYTE(0xD00034)==0 && volMEMBYTE(0x10FE80)==0) fixPrintf(25, 9,0,0,"INSERT COIN "); // no regular P1 credits available && dev-mode inactive
+				}
+
+				if(volMEMBYTE(0x10FD83)==1) // BIOS-COUNTRY-CODE 1=USA (separete P2 credit counter)
+				{
+					if(volMEMBYTE(0x10FE01)>0  && volMEMBYTE(0x10FE80)>0)  fixPrintf(25, 9,0,0,"PRESS START "); // dev P2 credits available && dev-mode active
+					if(volMEMBYTE(0x10FE01)==0 && volMEMBYTE(0x10FE80)>0)  fixPrintf(25, 9,0,0,"INSERT COIN "); // no dev P2 credits available && dev-mode active
+					if(volMEMBYTE(0xD00035)>0  && volMEMBYTE(0x10FE80)==0) fixPrintf(25, 9,0,0,"PRESS START "); // regular P2 credits available && dev-mode inactive
+					if(volMEMBYTE(0xD00035)==0 && volMEMBYTE(0x10FE80)==0) fixPrintf(25, 9,0,0,"INSERT COIN "); // no regular P2 credits available && dev-mode inactive
+				}
+			}
+
+			// playing /////////////////////////////////////////////////////////////////
+
+			// Player 1 ////////////////////////////////////////////////////////////////
+			if(volMEMBYTE(0x10FDB6)==1) // BIOS-PLAYER-MOD1 1 = playing
+			{
+				fixPrintf( 4, 6,0,0,"PLAYING  ");
+				fixPrintf( 3, 9,0,0,"P1 PRESS A ");
+
+				if(p1&JOY_A)
+				{
+					volMEMBYTE(0x10FDB6)=0x02;	// sets BIOS-PLAYER-MOD1 to 2 (P1 Continue Option)
+					P1_continue_timer=600;		// start P1 continue timer
+				}
+			}
+
+			// Player 2 ///////////////////////////////////////////////////////////////////
+			if(volMEMBYTE(0x10FDB7)==1) // BIOS-PLAYER-MOD2 1 = playing
+			{
+				fixPrintf(26, 6,0,0,"PLAYING  ");
+				fixPrintf(25, 9,0,0,"P2 PRESS A ");
+
+				if(p2&JOY_A)
+				{
+					volMEMBYTE(0x10FDB7)=0x02;	// sets BIOS-PLAYER-MOD2 to 2 (P2 Continue Option)
+					P2_continue_timer=600;		// start P2 continue timer
+				}
+			}
+
+			// continue timer //////////////////////////////////////////////////////////
+
+			// Player 1 ////////////////////////////////////////////////////////////////
+			if(P1_continue_timer>0)
+			{
+				P1_continue_timer-=1;
+
+				if(P1_input_delay==0 && P1_continue_timer>60) // speed up timer if C is pressed
+				{
+					if(p1&JOY_C)
+					{
+						P1_continue_timer-=60;
+						P1_input_delay=10;
+					}
+				}
+
+				fixPrintf( 4, 6,0,0,"CONTINUE?");
+				fixPrintf( 7, 7,0,0,"%02d", P1_continue_timer/60); // show timer
+
+				if(volMEMBYTE(0x10FE00)>0  && volMEMBYTE(0x10FE80)>0)  fixPrintf( 3, 9,0,0,"PRESS START "); // dev P1 credits available && dev-mode active
+				if(volMEMBYTE(0x10FE00)==0 && volMEMBYTE(0x10FE80)>0)  fixPrintf( 3, 9,0,0,"INSERT COIN "); // no dev P1 credits available && dev-mode active
+				if(volMEMBYTE(0xD00034)>0  && volMEMBYTE(0x10FE80)==0) fixPrintf( 3, 9,0,0,"PRESS START "); // regular P1 credits available && dev-mode inactive
+				if(volMEMBYTE(0xD00034)==0 && volMEMBYTE(0x10FE80)==0) fixPrintf( 3, 9,0,0,"INSERT COIN "); // no regular P1 credits available && dev-mode inactive
+
+
+				if(P1_continue_timer==0) // player 1 has not pressed START, start game_over_timer
+				{
+					volMEMBYTE(0x10FDB6)=0x03;  // sets BIOS-PLAYER-MOD1 to 3 (P1 Game Over)
+					P1_game_over_timer=300;	// start game_over_timer
+					clearFixLayer();		// clear message
+				}
+
+				if(volMEMBYTE(0x10FDB6)==1) // BIOS-PLAYER-MOD1 = 1 >> player 1 has pressed START - continue game
+				{
+					P1_continue_timer=0;	// reset timer
+					clearFixLayer();	// clear message
+				}
+			}
+
+			// Player 2 ///////////////////////////////////////////////////////////////////
+			if(P2_continue_timer>0)
+			{
+				P2_continue_timer-=1;
+
+				if(P2_input_delay==0 && P2_continue_timer>60) // speed up timer if C is pressed
+				{
+					if(p2&JOY_C)
+					{
+						P2_continue_timer-=60;
+						P2_input_delay=10;
+					}
+				}
+
+				fixPrintf(26, 6,0,0,"CONTINUE?");
+				fixPrintf(29, 7,0,0,"%02d", P2_continue_timer/60); // show timer
+
+				if(volMEMBYTE(0x10FD83)==0 || volMEMBYTE(0x10FD83)==2) // BIOS-COUNTRY-CODE 0=JAP or 2=EUR (single credit counter)
+				{
+					if(volMEMBYTE(0x10FE00)>0  && volMEMBYTE(0x10FE80)>0)  fixPrintf(25, 9,0,0,"PRESS START "); // dev P1 credits available && dev-mode active
+					if(volMEMBYTE(0x10FE00)==0 && volMEMBYTE(0x10FE80)>0)  fixPrintf(25, 9,0,0,"INSERT COIN "); // no dev P1 credits available && dev-mode active
+					if(volMEMBYTE(0xD00034)>0  && volMEMBYTE(0x10FE80)==0) fixPrintf(25, 9,0,0,"PRESS START "); // regular P1 credits available && dev-mode inactive
+					if(volMEMBYTE(0xD00034)==0 && volMEMBYTE(0x10FE80)==0) fixPrintf(25, 9,0,0,"INSERT COIN "); // no regular P1 credits available && dev-mode inactive
+				}
+
+				if(volMEMBYTE(0x10FD83)==1) // BIOS-COUNTRY-CODE 1=USA (separete P2 credit counter)
+				{
+					if(volMEMBYTE(0x10FE01)>0  && volMEMBYTE(0x10FE80)>0)  fixPrintf(25, 9,0,0,"PRESS START "); // dev P2 credits available && dev-mode active
+					if(volMEMBYTE(0x10FE01)==0 && volMEMBYTE(0x10FE80)>0)  fixPrintf(25, 9,0,0,"INSERT COIN "); // no dev P2 credits available && dev-mode active
+					if(volMEMBYTE(0xD00035)>0  && volMEMBYTE(0x10FE80)==0) fixPrintf(25, 9,0,0,"PRESS START "); // regular P2 credits available && dev-mode inactive
+					if(volMEMBYTE(0xD00035)==0 && volMEMBYTE(0x10FE80)==0) fixPrintf(25, 9,0,0,"INSERT COIN "); // no regular P2 credits available && dev-mode inactive
+				}
+
+				if(P2_continue_timer==0) // player 2 has not pressed START, start game_over_timer
+				{
+					volMEMBYTE(0x10FDB7)=0x03;  // sets BIOS-PLAYER-MOD2 to 3 (P2 Game Over)
+					P2_game_over_timer=300;	// start game_over_timer
+					clearFixLayer();		// clear message
+				}
+
+				if(volMEMBYTE(0x10FDB7)==1) // BIOS-PLAYER-MOD2 = 1 >> player 2 has pressed START - continue game
+				{
+					P2_continue_timer=0;	// reset timer
+					clearFixLayer();	// clear message
+				}
+			}
+
+			// game over timer //////////////////////////////////////////////////////////
+
+			// Player 1 ////////////////////////////////////////////////////////////////
+			if(P1_game_over_timer>0)
+			{
+				P1_game_over_timer-=1;
+				fixPrintf( 4, 6,0,0,"GAME OVER");
+				fixPrintf( 7, 7,0,0,"%02d", P1_game_over_timer/60);
+			//	fixPrintf( 3, 9,0,0,"            ");
+
+				if(p1&JOY_B)
+				{
+					bkp_data.save_slot[6]=22345678;  // add score
+					bkp_data.save_slot[16]=11140802; // add name
+				}
+
+				if(P1_game_over_timer==0)
+				{
+					volMEMBYTE(0x10FDB6)=0x00;	// sets BIOS-PLAYER-MOD1 to 0 (P1 Never Played)
+					clearFixLayer();			// clear message
+				}
+			}
+
+			// Player 2 ////////////////////////////////////////////////////////////////
+			if(P2_game_over_timer>0)
+			{
+				P2_game_over_timer-=1;
+				fixPrintf(26, 6,0,0,"GAME OVER");
+				fixPrintf(29, 7,0,0,"%02d", P2_game_over_timer/60);
+			//	fixPrintf(25, 9,0,0,"            ");
+
+				if(p2&JOY_B)
+				{
+					bkp_data.save_slot[6]=10123456;  // add score
+					bkp_data.save_slot[16]=11140802; // add name
+				}
+
+				if(P2_game_over_timer==0)
+				{
+					volMEMBYTE(0x10FDB7)=0x00;	// sets BIOS-PLAYER-MOD2 to 0 (P2 Never Played)
+					clearFixLayer();			// clear message
+				}
+			}
+
+			if(P1_input_delay>0){P1_input_delay-=1;} // count down input delay
+			if(P2_input_delay>0){P2_input_delay-=1;} // count down input delay
+
+			// exit game mode ////////////////////////////////////////////////////////////////
+
+			if(volMEMBYTE(0x10FDB6)==0 && volMEMBYTE(0x10FDB7)==0) // BIOS-PLAYER-MOD1 and BIOS-PLAYER-MOD2 == 0 (never played)
+			{
+				break; // exit loop and call BIOSF_SYSTEM_RETURN (will restart demo or return to title if credits available)
+			}
+
+		}
+
+//		fixPrintf( 26, 5,0,0,"NGH : %06d", volMEMWORD(0x108)); // NGH number
+//		fixPrintf( 26, 5,0,0,"DEV-MODE %03d", volMEMBYTE(0x10FE80)); // non-zero = developer mode is active
+		fixPrintf( 26, 3,0,0,"FRAMES: %04d",	DAT_frameCounter);
+
+		if(volMEMBYTE(0x10FD83)==0) fixPrintf(11,3,0,0,"JAP"); // BIOS-COUNTRY-CODE - 0=JAP, 1=USA, 2=EUR
+		if(volMEMBYTE(0x10FD83)==1) fixPrintf(11,3,0,0,"USA"); // BIOS-COUNTRY-CODE - 0=JAP, 1=USA, 2=EUR
+		if(volMEMBYTE(0x10FD83)==2) fixPrintf(11,3,0,0,"EUR"); // BIOS-COUNTRY-CODE - 0=JAP, 1=USA, 2=EUR
+
+		if(volMEMBYTE(0x10FD82)==0) fixPrintf( 2,3,0,0,"BIOS:AES-"); // BIOS-MVS-FLAG - 0=AES, 128(0x80)=MVS
+		if(volMEMBYTE(0x10FD82)>0 ) fixPrintf( 2,3,0,0,"BIOS:MVS-"); // BIOS-MVS-FLAG - 0=AES, 128(0x80)=MVS
+
+		fixPrintf( 2,25,0,0,"------------------------------------");
+		fixPrintf( 2,26,0,0,"INIT-FLAG   : %02d", global_data.user_request_0_flag); // 0 = init mode was not called, 1 = init mode was called by BIOS
+		fixPrintf( 2,27,0,0,"USER-REQUEST: %02d", volMEMBYTE(0x10FDAE)); // 0 = Init, 1 = Boot animation, 2 = Demo, 3 = Game (set by SYSTEM BIOS)
+		fixPrintf( 2,28,0,0,"USER-MODE   : %02d", volMEMBYTE(0x10FDAF)); // Used by the game to tell what it's doing: 0:Init/Boot animation, 1:Title/Demo, 2:Game
+
+		fixPrintf(22,26,0,0,"START FLAG  : %02d", volMEMBYTE(0x10FDB4)); // indicates which player has pressed the START_BUTTON (P1=1, P2=2)
+		fixPrintf(22,27,0,0,"PLAYER-MOD1 : %02d", volMEMBYTE(0x10FDB6)); // Player 1 status. 0:Never played, 1:Playing, 2:Continue option being displayed, 3:Game over
+		fixPrintf(22,28,0,0,"PLAYER-MOD2 : %02d", volMEMBYTE(0x10FDB7)); // Player 1 status. 0:Never played, 1:Playing, 2:Continue option being displayed, 3:Game over
+	}
+
+	__asm__ ("jmp 0xc00444 \n"); // BIOSF_SYSTEM_RETURN - return to bios control
+}
+
+void PLAYER_START(void) // is called by MVS and AES BIOS if user has pressed P1 or P2 START_BUTTON
+{
+	// PLAYER 1 ///////////////////////////////////////////////////////////////////////////////////////
+
+	// Player 1 is in the GAME OVER state, pressing START is disabled (to avoid unwanted credit decrement)
+	if(volMEMBYTE(0x10FDB6)==3 && volMEMBYTE(0x10FDB4)==1) // BIOS-PLAYER-MOD1 == 3 && START_FLAG == 1
+	{
+		volMEMBYTE(0x10FDB4)=0x00; // deactivate P1 START_BUTTON
+	}
+
+	// Player 1 is currently playing, pressing START is disabled (to avoid unwanted credit decrement)
+	if(volMEMBYTE(0x10FDB6)==1 && volMEMBYTE(0x10FDB4)==1) // BIOS-PLAYER-MOD1 == 1 && START_FLAG == 1
+	{
+		volMEMBYTE(0x10FDB4)=0x00; // deactivate P1 START_BUTTON
+	}
+
+	// Player 1 Continue option being displayed, pressing START is allowed
+	if(volMEMBYTE(0x10FDB6)==2 && volMEMBYTE(0x10FDB4)==1) // BIOS-PLAYER-MOD1 == 2 && START_FLAG == 1
+	{
+		volMEMBYTE(0x10FDB6)=0x01; // sets BIOS-PLAYER-MOD1 to 1 (P1 Playing) to decrement 1 credit
+	}
+
+	//  Player 1 has started the game for the first time from the title mode
+	if(volMEMBYTE(0x10FDAF)==1 && volMEMBYTE(0x10FDB6)==0 && volMEMBYTE(0x10FDB4)==1) // BIOS-USER-MODE == 1 && BIOS-PLAYER-MOD1 == 0 && START_FLAG == 1
+	{
+		volMEMBYTE(0x10FDAF)=0x02;	// set BIOS-USER-MODE to 2 (GAME), it stops the BIOS_COMPULSION_TIMER
+		volMEMBYTE(0x10FDB6)=0x01;	// set BIOS-PLAYER-MOD1 to 1 (P1 Playing), it deactivates P1 START_BUTTON
+		clearFixLayer(); 			// clear TITLE screen
+	}
+
+	// Player 1 joins the game of Player 2
+	if(volMEMBYTE(0x10FDAF)==2 && volMEMBYTE(0x10FDB6)==0 && volMEMBYTE(0x10FDB4)==1) // BIOS-USER-MODE == 2 && BIOS-PLAYER-MOD1 == 0  && START_FLAG == 1
+	{
+		volMEMBYTE(0x10FDB6)=0x01;	// set BIOS-PLAYER-MOD1 to 1 (P1 Playing), it deactivates P1 START_BUTTON
+	}
+
+	// PLAYER 2 ///////////////////////////////////////////////////////////////////////////////////////
+
+	// Player 2 is in the GAME OVER state, pressing START is disabled (to avoid unwanted credit decrement)
+	if(volMEMBYTE(0x10FDB7)==3 && volMEMBYTE(0x10FDB4)==2) // BIOS-PLAYER-MOD1 == 3 && START_FLAG == 2
+	{
+		volMEMBYTE(0x10FDB4)=0x00; // deactivate P2 START_BUTTON
+	}
+
+	// Player 2 is currently playing, pressing START is disabled (to avoid unwanted credit decrement)
+	if(volMEMBYTE(0x10FDB7)==1 && volMEMBYTE(0x10FDB4)==2) // BIOS-PLAYER-MOD2 = 1  && START_FLAG == 2
+	{
+		volMEMBYTE(0x10FDB4)=0x00; // deactivate P2 START_BUTTON
+	}
+
+	// Player 2 Continue option being displayed, pressing START is allowed
+	if(volMEMBYTE(0x10FDB7)==2 && volMEMBYTE(0x10FDB4)==2) // BIOS-PLAYER-MOD2 == 2  && START_FLAG == 2
+	{
+		volMEMBYTE(0x10FDB7)=0x01; // sets BIOS-PLAYER-MOD2 to 1 (P2 Playing) to decrement 1 credit
+	}
+
+	//  Player 2 has started the game for the first time from the title mode
+	//  JAP or EUR BIOS has start flag 3 for Player 2, it will decrement 2 credits and starts P1 and P2 game simultaneously
+	if(volMEMBYTE(0x10FDAF)==1 && volMEMBYTE(0x10FDB7)==0 && volMEMBYTE(0x10FDB4)==3) // BIOS-USER-MODE == 1 && BIOS-PLAYER-MOD2 = 0 && START_FLAG == 3
+	{
+		volMEMBYTE(0x10FDAF)=0x02;	// set BIOS-USER-MODE to 2 (GAME), it stops the BIOS_COMPULSION_TIMER
+		volMEMBYTE(0x10FDB7)=0x01;	// set BIOS-PLAYER-MOD2 to 1 (P2 Playing), it deactivates P2 START_BUTTON
+		volMEMBYTE(0x10FDB6)=0x01;	// set BIOS-PLAYER-MOD1 to 1 (P1 Playing), it deactivates P1 START_BUTTON
+		clearFixLayer(); 			// clear TITLE screen
+	}
+
+	//  Player 2 has started the game for the first time from the title mode
+	//  USA BIOS has start flag 2 for Player 2, and will start the game only for Player 2 and decrement 1 credit (from P2 credit counter)
+	if(volMEMBYTE(0x10FDAF)==1 && volMEMBYTE(0x10FDB7)==0 && volMEMBYTE(0x10FDB4)==2) // BIOS-USER-MODE == 1 && BIOS-PLAYER-MOD2 = 0 && START_FLAG == 2
+	{
+		volMEMBYTE(0x10FDAF)=0x02;	// set BIOS-USER-MODE to 2 (GAME), it stops the BIOS_COMPULSION_TIMER
+		volMEMBYTE(0x10FDB7)=0x01;	// set BIOS-PLAYER-MOD2 to 2 (P2 Playing), it deactivates P1 START_BUTTON
+		clearFixLayer(); 			// clear TITLE screen
+	}
+
+	// Player 2 joins the game of Player 1
+	if(volMEMBYTE(0x10FDAF)==2 && volMEMBYTE(0x10FDB7)==0 && volMEMBYTE(0x10FDB4)==2) // BIOS-USER-MODE == 2 && BIOS-PLAYER-MOD1 == 0  && START_FLAG == 2
+	{
+		volMEMBYTE(0x10FDB7)=0x01;	// set BIOS-PLAYER-MOD2 to 1 (P2 Playing), it deactivates P1 START_BUTTON
+	}
+}
+
+// demo end (MVS only)  //////////////////////////////////////////////////////////////
+
+void DEMO_END(void) // is called by MVS BIOS if user has inserted a coin and exits the DEMO
+{
+	// end demo (clear display / update status for sram save / whatever needed)
+	// fixPrintf(15, 4,0,0,"DEMO END");
+	clearFixLayer();
+}
+
+// coin sound (MVS only)  ////////////////////////////////////////////////////////////
+
+void COIN_SOUND(void) // is called by MVS BIOS if user has inserted a coin
+{
+	(*((PBYTE)0x320000)) = (0x14); //play coin sound
+}
+
+
+
+
+
+
+
+
+
+// conversion ////////////////////////////////////////////////////////////////////////
+
+int convertHexToDecimal(int hexadecimal)
+{
+	int decimal=0;
+
+	decimal=hexadecimal-(hexadecimal/16)*6;
+
+return decimal;
+}
+
+void convertDecimaltoHex(int decimal)
+{
+	// int decimal=1600,
+	int hexadecimal=0, decimal_calculated=0;
+
+	// char zeichen;
+	// zeichen = 'A';
+	// zeichen = 66;
+	//	fixPrintf(2, 17,0,0, "Zeichen: %c\0", zeichen);
+
+	hexadecimal=decimal+(decimal/10)*6;
+	decimal_calculated=hexadecimal-(hexadecimal/16)*6;
+
+	fixPrintf(2, 14,0,0,"Convert dec to hex");
+//	fixPrintf(2, 16,0,0,"0x0 hex input: %06d",0x5A);
+	fixPrintf(2, 17,0,0,"decimal input: %06d", decimal);
+	fixPrintf(2, 18,0,0,"dec hex output: %06d", hexadecimal);
+	fixPrintf(2, 19,0,0,"decimal output: %06d", decimal_calculated);
+}
+
+// diplay ranking and soft dips ////////////////////////////////////////////////////
+
+void displayRanking(void)
+{
+	int i;
+	int letter1, letter2, letter3;
+	waitVBlank();
+
+//	fixPrintf(24,13,0,0,"BKP-0 %08d", bkp_data.save_slot[0]);
+//	fixPrintf(24,14,0,0,"BKP-1 %08d", bkp_data.save_slot[1]);
+//	fixPrintf(24,15,0,0,"BKP-2 %08d", bkp_data.save_slot[2]);
+//	fixPrintf(24,16,0,0,"BKP-3 %08d", bkp_data.save_slot[3]);
+//	fixPrintf(24,17,0,0,"BKP-4 %08d", bkp_data.save_slot[4]);
+//	fixPrintf(24,18,0,0,"BKP-5 %08d", bkp_data.save_slot[5]);
+//	fixPrintf(24,19,0,0,"BKP-6 %08d", bkp_data.save_slot[6]);
+//	fixPrintf(24,20,0,0,"BKP-7 %08d", bkp_data.save_slot[7]);
+//	fixPrintf(24,21,0,0,"BKP-8 %08d", bkp_data.save_slot[8]);
+//	fixPrintf(24,22,0,0,"BKP-9 %08d", bkp_data.save_slot[9]);
+
+	fixPrintf(2,12,0,0,"TOP 10 RANKING");
+
+	// print highscores
+	for(i=0; i<10; i++)
+	{
+		fixPrintf( 1,14+i,0,0,"%2d %8d", i+1, bkp_data.save_slot[i]-10000000);
+	}
+
+	// print names
+	for(i=10; i<20; i++)
+	{
+		letter1=bkp_data.save_slot[i];
+		letter2=bkp_data.save_slot[i];
+		letter3=bkp_data.save_slot[i];
+
+		letter1=(letter1-11000000)/10000;
+		letter2=((letter2-11000000)-(letter1*10000))/100;
+		letter3=(letter3-11000000)-(letter1*10000)-(letter2*100);
+
+		fixPrintf(13,4+i,0,0,"%s%s%s", LetterList[letter1],LetterList[letter2], LetterList[letter3]);
+	}
+}
+
+void displaySoftDipsMVS(void)
+{
+	fixPrintf( 21,12,0,0,"MVS SOFT DIP DATA");
+
+	fixPrintf( 21,14,0,0,"PLAY TIME : %02d:%02d", convertHexToDecimal(volMEMBYTE(0x10FD84)),convertHexToDecimal(volMEMBYTE(0x10FD85))); // DIP 1 and 2
+	fixPrintf( 21,15,0,0,"CONT.TIME : %02d:%02d", convertHexToDecimal(volMEMBYTE(0x10FD86)),convertHexToDecimal(volMEMBYTE(0x10FD87))); // DIP 3 and 4
+	fixPrintf( 21,16,0,0,"LIVES     : %02d", volMEMBYTE(0x10FD88));  // DIP 5
+	fixPrintf( 21,17,0,0,"CONTINUES : %02d", volMEMBYTE(0x10FD89));  // DIP 6
+	fixPrintf( 21,18,0,0,"DIFFICULTY: %02d", volMEMBYTE(0x10FD8A));  // DIP 7
+	fixPrintf( 21,19,0,0,"DEMO SOUND: %02d", volMEMBYTE(0x10FD8B));  // DIP 8
+}
+
+void displaySoftDipsAES(void)
+{
+	fixPrintf( 21,12,0,0,"AES SOFT DIP DATA");
+
+	fixPrintf( 21,14,0,0,"LIVES     : %02d", global_data.aes_soft_dip_lives);  // DIP 5
+	fixPrintf( 21,15,0,0,"CONTINUES : %02d", global_data.aes_soft_dip_continues);  // DIP 6
+	fixPrintf( 21,16,0,0,"DIFFICULTY: %02d", global_data.aes_soft_dip_difficulty);  // DIP 7
+}
+
+
+// seaFighter ////////////////////////////////////////////////////////////////////////
 
 #define FRONT_START_X 157
 #define FRONT_START_Y 24
@@ -23,132 +990,32 @@
 #define BACK_MIN_Y 5
 #define BACK_MAX_Y 8
 
-typedef struct bkp_ram_info {
-	WORD debug_dips;
-	BYTE stuff[254];
-	//256 bytes
-} bkp_ram_info;
+int x=94+48;
+int y=54;
+picture seafighter_ship;
+ushort flipMode=0;
 
-bkp_ram_info bkp_data;
-
-extern uint _end;
-BYTE p1,p2,ps,p1e,p2e;
-uint callBackCounter;
-
-//fix palettes for text
-static const ushort fixPalettes[]= {
-	0x8000, 0xefb8, 0x0222, 0x5fa7, 0xde85, 0x2c74, 0x2a52, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000,
-	0x8000, 0xebea, 0x0041, 0xa9d8, 0x57c7, 0xf6b5, 0x43a4, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000,
-	0x8000, 0x014c, 0x9113, 0xb15e, 0x317f, 0x119f, 0x11af, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000,
-	0x8000, 0xeb21, 0x0111, 0xee21, 0x6f31, 0x6f51, 0x6f61, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000,
-	0x8000, 0xed31, 0xc311, 0xee51, 0x4f81, 0x4fa1, 0x4fc1, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000,
-	0x8000, 0xbad3, 0x0111, 0x09c0, 0xe7b0, 0xc580, 0xe250, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000,
-	0x8000, 0xefb8, 0x0111, 0xde96, 0x3c75, 0x2950, 0x4720, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000,
-	0x8000, 0x8444, 0x0111, 0xf555, 0xf666, 0x7777, 0x8888, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000 };
-
-#define CLIPPING 5
-
-void scrollerInitClipped(scroller *s, scrollerInfo *si, ushort baseSprite, ushort basePalette, short posX, short posY, ushort clipping) {
-	ushort i,addr,pos;
-
-	scrollerInit(s,si,baseSprite,basePalette,posX,posY);
-	addr=VRAM_POSY_ADDR(baseSprite);
-	//pos=((YSHIFT-(0-posY))<<7)|(clipping&0x3f);
-	pos=VRAM_POSY(-posY,SPR_UNLINK,clipping);
-	for(i=0;i<21;i++)
-		SC234Put(addr++,pos);
-}
-
-void scrollerSetPosClipped(scroller *s, short toX, short toY, ushort clipping) {
-	ushort i,addr,pos;
-
-	if(s->scrlPosY!=toY) {	//Y moved ?
-		scrollerSetPos(s,toX,toY);
-
-		addr=VRAM_POSY_ADDR(s->baseSprite);
-		//pos=((YSHIFT-(0-toY))<<7)|(clipping&0x3f);
-		pos=VRAM_POSY(-toY,SPR_UNLINK,clipping);
-		for(i=0;i<21;i++)
-			SC234Put(addr++,pos);
-		//s->scrlPosY=toY;
-	} else scrollerSetPos(s,toX,toY);
-}
-
-void scrollerDemo(){}
-
-
-void sortSprites(aSprite *list[], int count) {
-	//insertion sort
-	int x,y;
-	aSprite *tmp;
-
-	for(x=1;x<count;x++) {
-		y=x;
-		while(y>0 && (list[y]->posY < list[y-1]->posY)) {
-			tmp=list[y];
-			list[y]=list[y-1];
-			list[y-1]=tmp;
-			y--;
-		}
-	}
-}
-
-#define POOL_MODE
-#define LOTS
-
-void aSpriteDemo()
-{}
-
-const char sinTable[]={	32,34,35,37,38,40,41,43,44,46,47,48,50,51,52,53,
-						55,56,57,58,59,59,60,61,62,62,63,63,63,64,64,64,
-						64,64,64,64,63,63,63,62,62,61,60,59,59,58,57,56,
-						55,53,52,51,50,48,47,46,44,43,41,40,38,37,35,34,
-						32,30,29,27,26,24,23,21,20,18,17,16,14,13,12,11,
-						9,8,7,6,5,5,4,3,2,2,1,1,1,0,0,0,
-						0,0,0,0,1,1,1,2,2,3,4,5,5,6,7,8,
-						9,11,12,13,14,16,17,18,20,21,23,24,26,27,29,30};
-
-void seafighter()
+void sf_init(void)
 {
-	int x=94+48;
-	int y=54;
-	picture seafighter_ship;
-	ushort tableShift=0;
-	ushort flipMode=0;
+	//jobMeterSetup(true);
 
-	clearFixLayer();
-	backgroundColor(0x7bbb);
-	initGfx();
-	jobMeterSetup(true);
-
-	LSPCmode=0x1c00;
-	loadTIirq(TI_MODE_SINGLE_DATA);
+	//LSPCmode=0x1c00;
 
 	pictureInit(&seafighter_ship, &seafighterh02, 1, 50, x, y,FLIP_NONE);
 	palJobPut(50,seafighterh02.palInfo->count,seafighterh02.palInfo->data);
+}
 
-	fixPrint(2,3,4,3,"1P \x12\x13\x10\x11: move picture");
-	fixPrint(2,4,4,3,"1P A+\x12\x13\x10\x11: flip mode");
+void sf_demomode(void)
+{
 
-	while(1) {
-		SCClose();
-		waitVBlank();
+
+		//SCClose();
+		//waitVBlank();
 
 		ps=volMEMBYTE(PS_CURRENT);
 		p1=volMEMBYTE(P1_CURRENT);
 		p1e=volMEMBYTE(P1_EDGE);
 
-		if(ps&P1_START) {
-			clearSprites(1, seafighterh02.tileWidth);
-			TInextTable=0;
-			SCClose();
-			waitVBlank();
-			unloadTIirq();
-			return;
-		}
-
-		while((volMEMWORD(0x3c0006)>>7)!=0x120); //wait raster line 16
-		jobMeterColor(JOB_BLUE);
 
 		if(p1&JOY_A) {
 			if(p1e&JOY_UP)		flipMode|=FLIP_Y;
@@ -167,592 +1034,8 @@ void seafighter()
 
 
 //			SC234Put(rasterAddr,VRAM_POSX(x)); //restore position
-			TInextTable=0;
+//			TInextTable=0;
 
 
-		tableShift++;
-		jobMeterColor(JOB_GREEN);
-	}
 
-}
-
-void pictureDemo() {
-	int x=94+48;
-	int y=54;
-	int i,j;
-	picture testPict;
-	picture seafighter_ship;
-	//Picture gradientPict;
-	ushort raster=false;
-	ushort tableShift=0;
-	ushort rasterData0[512];
-	ushort rasterData1[512];
-	ushort rasterAddr;
-	ushort *dataPtr;
-	short displayedRasters;
-	ushort flipMode=0;
-
-	clearFixLayer();
-	backgroundColor(0x7bbb);
-	initGfx();
-	jobMeterSetup(true);
-
-	LSPCmode=0x1c00;
-	loadTIirq(TI_MODE_SINGLE_DATA);
-
-	pictureInit(&testPict, &terrypict,1, 16, x, y,FLIP_NONE);
-	palJobPut(16,terrypict.palInfo->count,terrypict.palInfo->data);
-
-	pictureInit(&seafighter_ship, &seafighterh02, 1, 50, x+20, y,FLIP_NONE);
-  palJobPut(50,seafighterh02.palInfo->count,seafighterh02.palInfo->data);
-
-
-	rasterAddr=0x8400+testPict.baseSprite;
-
-	//pictureInit(&gradientPict, &gradient,64, 32, 32, y,FLIP_NONE);
-	//palJobPut(32,gradient_Palettes.count,gradient_Palettes.data);
-
-	fixPrint(2,3,4,3,"1P \x12\x13\x10\x11: move picture");
-	fixPrint(2,4,4,3,"1P A+\x12\x13\x10\x11: flip mode");
-	fixPrint(2,5,4,3,"1P B: toggle rasters");
-
-	while(1) {
-		SCClose();
-		waitVBlank();
-
-		ps=volMEMBYTE(PS_CURRENT);
-		p1=volMEMBYTE(P1_CURRENT);
-		p1e=volMEMBYTE(P1_EDGE);
-
-		if(ps&P1_START) {
-			clearSprites(1, terrypict.tileWidth);
-			clearSprites(64, gradient.tileWidth);
-			TInextTable=0;
-			SCClose();
-			waitVBlank();
-			unloadTIirq();
-			return;
-		}
-
-		while((volMEMWORD(0x3c0006)>>7)!=0x120); //wait raster line 16
-		jobMeterColor(JOB_BLUE);
-
-		if(p1&JOY_A) {
-			if(p1e&JOY_UP)		flipMode|=FLIP_Y;
-			if(p1e&JOY_DOWN)	flipMode&=~FLIP_Y;
-			if(p1e&JOY_RIGHT)	flipMode|=FLIP_X;
-			if(p1e&JOY_LEFT)	flipMode&=~FLIP_X;
-		} else {
-			if(p1&JOY_UP)		y--;
-			if(p1&JOY_DOWN)		y++;
-			if(p1&JOY_LEFT)		x--;
-			if(p1&JOY_RIGHT)	x++;
-		}
-		if(p1e&JOY_B)	raster^=1;
-
-		pictureSetFlip(&testPict,flipMode);
-		pictureSetPos(&testPict, x, y);
-
-		if(raster) {
-			TInextTable=(TInextTable==rasterData0)?rasterData1:rasterData0;
-			dataPtr=TInextTable;
-			rasterAddr=VRAM_POSX_ADDR(testPict.baseSprite);
-
-			if(p1&JOY_C) for(i=0;i<50000;i++);	//induce frameskipping
-
-			TIbase=TI_ZERO+(y>0?384*y:0); //timing to first line
-
-			displayedRasters=(testPict.info->tileHeight<<4)-(y>=0?0:0-y);
-			if(displayedRasters+y>224) displayedRasters=224-y;
-			if(displayedRasters<0) displayedRasters=0;
-
-			i=(y>=0)?0:0-y;
-			for(j=0;j<displayedRasters;j++) {
-				*dataPtr++=rasterAddr;
-				if(!(j&0x1))
-					*dataPtr++=VRAM_POSX(x+(sinTable[(i+tableShift)&0x3f]-32));
-				else	*dataPtr++=VRAM_POSX(x-(sinTable[(i+1+tableShift)&0x3f]-32));
-				i++;
-			}
-			SC234Put(rasterAddr,VRAM_POSX(x)); //restore pos
-			*dataPtr++=0x0000;
-			*dataPtr++=0x0000;	//end
-		} else {
-			SC234Put(rasterAddr,VRAM_POSX(x)); //restore position
-			TInextTable=0;
-		}
-
-		tableShift++;
-		jobMeterColor(JOB_GREEN);
-	}
-}
-
-#define SCROLLSPEED 1.06
-void rasterScrollDemo() {
-	BYTE p1,ps;
-	pictureInfo frontLayerInfo, backLayerInfo;
-	picture frontLayer, backLayer;
-	short posY=-192;
-	ushort rasterData0[256],rasterData1[256];
-	ushort *rasterData;
-	float scrollAcc;
-	int scrollPos[34];
-	int scrollValues[34];
-	ushort backAddr=0x8401;
-	ushort frontAddr=0x8421;
-	int x,y;
-	short frontPosX[13],backPosX[13];
-	ushort skipY;
-	ushort firstLine;
-	ushort zeroval;
-
-	//layers were merged to save up tiles/palettes
-	frontLayerInfo.stripSize=tf4layers.stripSize;
-	backLayerInfo.stripSize=tf4layers.stripSize;
-	frontLayerInfo.tileWidth=32;
-	backLayerInfo.tileWidth=32;
-	frontLayerInfo.tileHeight=tf4layers.tileHeight;
-	backLayerInfo.tileHeight=tf4layers.tileHeight;
-	//only using first map
-	frontLayerInfo.maps[0]=tf4layers.maps[0];
-	backLayerInfo.maps[0]=tf4layers.maps[0]+(tf4layers.stripSize*(32/2)); //bytesize but ushort* declaration, so /2
-
-
-	clearFixLayer();
-	initGfx();
-	jobMeterSetup(true);
-	loadTIirq(TI_MODE_DUAL_DATA);
-	TInextTable=0;
-
-	scrollValues[0]=1024;
-	scrollPos[0]=0;
-	scrollAcc=1024;
-	for(x=1;x<34;x++) {
-		scrollAcc*=SCROLLSPEED;
-		scrollValues[x]=(int)(scrollAcc+0.5);
-		scrollPos[x]=0;
-	}
-
-	pictureInit(&backLayer, &backLayerInfo,1,16,0,0,FLIP_NONE);
-	pictureInit(&frontLayer, &frontLayerInfo,33,16,0,0,FLIP_NONE);
-	palJobPut(16,tf4layers.palInfo->count,tf4layers.palInfo->data);
-
-	backgroundColor(0x38db);
-	fixPrint(0,1,0,0,"                                       ");
-	fixPrint(0,30,0,0,"                                       ");
-
-	fixPrint(2,3,4,3,"1P \x12\x13: Scroll Up/Down");
-	fixPrint(2,4,4,3,"1P A+\x12\x13: Adjust timer (line)");
-	fixPrint(2,5,4,3,"1P A+\x10\x11: Adjust timer (unit)");
-
-	zeroval=TI_ZERO;
-
-	while(1) {
-		SCClose();
-		waitVBlank();
-
-		while((volMEMWORD(0x3c0006)>>7)!=0x120); //line 16
-		jobMeterColor(JOB_BLUE);
-
-		p1=volMEMBYTE(P1_CURRENT);
-		p1e=volMEMBYTE(P1_EDGE);
-		ps=volMEMBYTE(PS_CURRENT);
-
-		if(ps&P1_START) {
-			clearSprites(1, 64);
-			TInextTable=0;
-			SCClose();
-			waitVBlank();
-			unloadTIirq();
-			return;
-		}
-
-		fixPrintf2(2,7,5,3,"TIbase: %d (0x%04x)   ",zeroval,zeroval);
-
-		if(p1&JOY_A) {
-			if(p1e&JOY_UP)		zeroval-=384;
-			if(p1e&JOY_DOWN)	zeroval+=384;
-			if(p1&JOY_RIGHT)	zeroval++;
-			if(p1&JOY_LEFT)		zeroval--;
-		} else {
-			if(p1&JOY_UP) if(posY<0) posY++;
-			if(p1&JOY_DOWN) if(posY>-288) posY--;
-		}
-
-		//update scroll values
-		for(x=0;x<34;x++) scrollPos[x]+=scrollValues[x];
-		frontPosX[0]=								(short)(0-(scrollPos[32]>>3));
-		frontPosX[1]=frontPosX[2]=					(short)(0-(scrollPos[24]>>3));
-		frontPosX[3]=frontPosX[4]=					(short)(0-(scrollPos[16]>>3));
-		frontPosX[5]=								(short)(0-(scrollPos[8]>>3));
-		frontPosX[6]=frontPosX[7]=frontPosX[8]=		(short)(0-(scrollPos[0]>>3));
-		frontPosX[9]=frontPosX[10]=frontPosX[11]=	(short)(0-(scrollPos[1]>>3));
-		frontPosX[12]=								(short)(0-(scrollPos[32]>>3));
-
-		backPosX[0]=								(short)(0-(scrollPos[24]>>3));
-		backPosX[1]=backPosX[2]=					(short)(0-(scrollPos[16]>>3));
-		backPosX[3]=backPosX[4]=					(short)(0-(scrollPos[8]>>3));
-		backPosX[5]=								(short)(0-(scrollPos[0]>>3));
-		backPosX[6]=backPosX[7]=backPosX[8]=		(short)(0-(scrollPos[0]>>4));
-		backPosX[9]=backPosX[10]=backPosX[11]=		(short)(0-(scrollPos[0]>>3));
-		backPosX[12]=								(short)(0-(scrollPos[1]>>3));
-
-		skipY=0-posY;
-		x=skipY>>5;
-		firstLine=32-(skipY&0x1f);
-
-		//TIbase=TI_ZERO+(384*firstLine); //timing to first raster line
-		TIbase=zeroval+(384*firstLine); //timing to first raster line
-		TInextTable=(TInextTable==rasterData0)?rasterData1:rasterData0;
-		rasterData=TInextTable;
-
-		pictureSetPos(&frontLayer,frontPosX[x]>>7,posY);
-		pictureSetPos(&backLayer,backPosX[x]>>7,posY);
-		//might need to force the update if base scroll position didn't change
-		SC234Put(frontAddr,frontPosX[x]);
-		SC234Put(backAddr,backPosX[x]);
-
-		if(skipY<164) { //can we see water?
-			TIreload=384*32;	//nope, 32px chunks
-			for(x++;x<13;x++) {
-				*rasterData++=frontAddr;
-				*rasterData++=frontPosX[x];
-				*rasterData++=backAddr;
-				*rasterData++=backPosX[x];
-				firstLine+=32;
-				if(firstLine>=224) break;
-			}
-		} else {
-			TIreload=384*4;		//yup, 4px chunks
-			for(x++;x<12;x++) {
-				for(y=0;y<8;y++) {
-					*rasterData++=frontAddr;
-					*rasterData++=frontPosX[x];
-					*rasterData++=backAddr;
-					*rasterData++=backPosX[x];
-				}
-				firstLine+=32;
-			}
-			x=1;
-			while(firstLine<224) {
-				*rasterData++=frontAddr;
-				*rasterData++=frontPosX[12];
-				*rasterData++=backAddr;
-				*rasterData++=0-(scrollPos[x++]>>3);
-				firstLine+=4;
-			}
-		}
-		*rasterData++=0x0000;
-		*rasterData++=0x0000;
-		jobMeterColor(JOB_GREEN);
-		SCClose();
-	}
-}
-
-#define DESERT_POSY	68
-static const short heatTable[16]={0,0,0,1,1,1,1,1,0,0,0,-1,-1,-1,-1,-1};
-
-void desertRaster(void) {
-	uint fc, ticks=0;
-	ushort *dataPtr;
-	ushort heatStartIndex=0;
-	ushort heatIndex=0;
-	ushort rasterAddr,i;
-	picture desertHandler;
-	ushort rasterData0[64];
-	ushort rasterData1[64];
-
-	clearFixLayer();
-	backgroundColor(0x6bef);
-
-	pictureInit(&desertHandler, &desert,1, 16, 8, DESERT_POSY,FLIP_NONE);
-	palJobPut(16,desert.palInfo->count,desert.palInfo->data);
-
-	LSPCmode=0x0000;
-	TIbase=TI_ZERO+DESERT_POSY*384; //timing to first line
-	TIreload=384*4; //4 lines intervals
-	rasterAddr=VRAM_POSY_ADDR(desertHandler.baseSprite);
-
-	loadTIirq(TI_MODE_SINGLE_DATA);
-
-	while(1) {
-		fc=DAT_frameCounter;
-		SCClose();
-		waitVBlank();
-
-		ps=volMEMBYTE(PS_EDGE);
-
-		if(ps&P1_START) {
-			clearSprites(1,desert.tileWidth);
-			TInextTable=0;
-			SCClose();
-			waitVBlank();
-			unloadTIirq();
-			return;
-		}
-
-		ticks=(fc^DAT_frameCounter)&DAT_frameCounter;
-		if(ticks&0x04) {
-			heatIndex=heatStartIndex++;
-			heatStartIndex&=0xf;
-
-			TInextTable=(TInextTable==rasterData0)?rasterData1:rasterData0;
-			dataPtr=TInextTable;
-
-			for(i=0;i<20;i++) { //80px pic/4px intervals = 20 iterations
-				*dataPtr++=rasterAddr;
-				*dataPtr++=VRAM_POSY(DESERT_POSY+heatTable[heatIndex++],SPR_UNLINK,desertHandler.info->tileHeight);
-				heatIndex&=0xf;
-			}
-			//end marker
-			*dataPtr++=0;
-			*dataPtr++=0;
-		}
-	}
-}
-
-
-//misc fix maps
-static const ushort fadeData0[15]={0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x03f0,0x0000};
-static const ushort fadeData1[15]={0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x03f1,0x0000};
-static const ushort fadeData2[15]={0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x03f2,0x0000};
-static const ushort fadeData3[15]={0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x03f3,0x0000};
-static const ushort fadeData4[15]={0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x03f4,0x0000};
-static const ushort fadeData5[15]={0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x03f5,0x0000};
-static const ushort fadeData6[15]={0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x03f6,0x0000};
-static const ushort fadeData7[15]={0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x03f7,0x0000};
-static const ushort fadeData8[15]={0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x03f8,0x0000};
-static const ushort fadeData9[15]={0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x03f9,0x0000};
-static const ushort fadeDataA[15]={0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x03fa,0x0000};
-static const uint fadeData[11]={(uint)fadeData0,(uint)fadeData1,(uint)fadeData2,(uint)fadeData3,(uint)fadeData4,(uint)fadeData5,(uint)fadeData6,(uint)fadeData7,(uint)fadeData8,(uint)fadeData9,(uint)fadeDataA};
-static const ushort	logo_95[78]={	0x0500,0x0501,0x0502,0x0503,0x0504,0x0505,0x0506,0x0507,0x0508,0x0509,0x050a,0x050b,0x0000,
-									0x0510,0x0511,0x0512,0x0513,0x0514,0x0515,0x0516,0x0517,0x0518,0x0519,0x051a,0x051b,0x0000,
-									0x0520,0x0521,0x0522,0x0523,0x0524,0x0525,0x0526,0x0527,0x0528,0x0529,0x052a,0x052b,0x0000,
-									0x0530,0x0531,0x0532,0x0533,0x0534,0x0535,0x0536,0x0537,0x0538,0x0539,0x053a,0x053b,0x0000,
-									0x0540,0x0541,0x0542,0x0543,0x0544,0x0545,0x0546,0x0547,0x0548,0x0549,0x054a,0x054b,0x0000,
-									0x0550,0x0551,0x0552,0x0553,0x0554,0x0555,0x0556,0x0557,0x0558,0x0559,0x055a,0x055b,0x0000 };
-static const ushort	logo_96[78]={	0x0560,0x0561,0x0562,0x0563,0x0564,0x0565,0x0566,0x0567,0x0568,0x0569,0x056a,0x056b,0x0000,
-									0x0570,0x0571,0x0572,0x0573,0x0574,0x0575,0x0576,0x0577,0x0578,0x0579,0x057a,0x057b,0x0000,
-									0x0580,0x0581,0x0582,0x0583,0x0584,0x0585,0x0586,0x0587,0x0588,0x0589,0x058a,0x058b,0x0000,
-									0x0590,0x0591,0x0592,0x0593,0x0594,0x0595,0x0596,0x0597,0x0598,0x0599,0x059a,0x059b,0x0000,
-									0x05a0,0x05a1,0x05a2,0x05a3,0x05a4,0x05a5,0x05a6,0x05a7,0x05a8,0x05a9,0x05aa,0x05ab,0x0000,
-									0x05b0,0x05b1,0x05b2,0x05b3,0x05b4,0x05b5,0x05b6,0x05b7,0x05b8,0x05b9,0x05ba,0x05bb,0x0000 };
-static const ushort	logo_97[78]={	0x0600,0x0601,0x0602,0x0603,0x0604,0x0605,0x0606,0x0607,0x0608,0x0609,0x060a,0x060b,0x0000,
-									0x0610,0x0611,0x0612,0x0613,0x0614,0x0615,0x0616,0x0617,0x0618,0x0619,0x061a,0x061b,0x0000,
-									0x0620,0x0621,0x0622,0x0623,0x0624,0x0625,0x0626,0x0627,0x0628,0x0629,0x062a,0x062b,0x0000,
-									0x0630,0x0631,0x0632,0x0633,0x0634,0x0635,0x0636,0x0637,0x0638,0x0639,0x063a,0x063b,0x0000,
-									0x0640,0x0641,0x0642,0x0643,0x0644,0x0645,0x0646,0x0647,0x0648,0x0649,0x064a,0x064b,0x0000,
-									0x0650,0x0651,0x0652,0x0653,0x0654,0x0655,0x0656,0x0657,0x0658,0x0659,0x065a,0x065b,0x0000 };
-static const ushort	logo_98[78]={	0x0660,0x0661,0x0662,0x0663,0x0664,0x0665,0x0666,0x0667,0x0668,0x0669,0x066a,0x066b,0x0000,
-									0x0670,0x0671,0x0672,0x0673,0x0674,0x0675,0x0676,0x0677,0x0678,0x0679,0x067a,0x067b,0x0000,
-									0x0680,0x0681,0x0682,0x0683,0x0684,0x0685,0x0686,0x0687,0x0688,0x0689,0x068a,0x068b,0x0000,
-									0x0690,0x0691,0x0692,0x0693,0x0694,0x0695,0x0696,0x0697,0x0698,0x0699,0x069a,0x069b,0x0000,
-									0x06a0,0x06a1,0x06a2,0x06a3,0x06a4,0x06a5,0x06a6,0x06a7,0x06a8,0x06a9,0x06aa,0x06ab,0x0000,
-									0x06b0,0x06b1,0x06b2,0x06b3,0x06b4,0x06b5,0x06b6,0x06b7,0x06b8,0x06b9,0x06ba,0x06bb,0x0000 };
-
-#define	MAX_HEALTH	192
-#define	MAX_POWER	64
-/*		/!\ Junk code to demo fix display. /!\				*
- * Made by highly trained monkeys, don't try this at home.	*
- * No, really, it's bad. Don't build strings like this.		*/
-void fixDemo() {
-	ushort	a,b,c,d;
-	short	i;
-
-	uint	fc, ticks=0;
-	ushort	power=0, logo=4;
-	short	time=99, health=MAX_HEALTH, fadeIndex=-1,fadeType=1;
-	ushort	powerString[16];
-	uchar	healthTmp[20];
-	ushort	healthTopString[20], healthBotString[20], counterString[20];
-
-	uchar	fadeDensity[40];
-
-	clearFixLayer();
-	jobMeterSetup(true);
-
-	palJobPut(14,1,&fix_bars_Palettes.data);
-	for(i=0;i<40;i++) fadeDensity[i]=0;
-
-	while(1) {
-		fc=DAT_frameCounter;
-		SCClose();
-		waitVBlank();
-
-		while((volMEMWORD(0x3c0006)>>7)!=0x120); //wait raster line 16
-		jobMeterColor(JOB_BLUE);
-
-		ps=volMEMBYTE(PS_EDGE);
-		if(ps&P1_START) {
-			SCClose();
-			waitVBlank();
-			return;
-		}
-
-		ticks=(fc^DAT_frameCounter)&DAT_frameCounter;
-		if(ticks&0x2) if(--health<0) health=MAX_HEALTH;
-		if(ticks&0x4) if(++power>MAX_POWER) power=0;
-		if(ticks&0x20) if(--time<0)time=99;
-
-		fixPrintf3(2,8,(DAT_frameCounter>>5)&0x7,3,counterString,"Frame #0x%08x",DAT_frameCounter);
-
-		//print power bar
-		fixPrintf3(2,14,14,3,powerString,"\xe9%c%c%c%c%c%c%c%c\xea",
-			0xe0+(power>7?8:power),						0xe0+(power>7+8?8:power<0+8?0:power-8),
-			0xe0+(power>7+16?8:power<0+16?0:power-16),	0xe0+(power>7+24?8:power<0+24?0:power-24),
-			0xe0+(power>7+32?8:power<0+32?0:power-32),	0xe0+(power>7+40?8:power<0+40?0:power-40),
-			0xe0+(power>7+48?8:power<0+48?0:power-48),	0xe0+(power>7+56?8:power<0+56?0:power-56)
-		);
-
-		//print health bar & timer
-		a=time%10;
-		b=time/10;
-		c=health>=96?health-96:health;
-		d=health>=96?0xd0:0xc0;
-		sprintf(healthTmp,"\xc9%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-			d+(c>7?8:c),				d+(c>7+8?8:c<0+8?0:c-8),	d+(c>7+16?8:c<0+16?0:c-16),
-			d+(c>7+24?8:c<0+24?0:c-24),	d+(c>7+32?8:c<0+32?0:c-32),	d+(c>7+40?8:c<0+40?0:c-40),
-			d+(c>7+48?8:c<0+48?0:c-48),	d+(c>7+56?8:c<0+56?0:c-56),	d+(c>7+64?8:c<0+64?0:c-64),
-			d+(c>7+72?8:c<0+72?0:c-72),	d+(c>7+80?8:c<0+80?0:c-80),	d+(c>7+88?8:c<0+88?0:c-88),
-			//timer
-			0xa0+b, 0xb0+b, 0xa0+a, 0xb0+a
-		);
-		fixPrintf3(2,4,14,3,healthTopString,"%s",healthTmp);
-		fixPrintf3(2,5,14,4,healthBotString,"%s",healthTmp);	//could also copy data from topString and +1 bank #
-
-		//do fade in / fade out
-		if(DAT_frameCounter&0x1) {
-			if(fadeIndex<39+27) fadeIndex++;
-			i=fadeIndex;
-			c=0;
-			if(fadeType) {
-				a=1;
-				do {
-					if(i>=39) goto _skip;
-					if(fadeDensity[i]!=a) {
-						fadeDensity[i]=a;
-						fixJobPut(i,16,FIX_COLUMN_WRITE,14,fadeData[a]);
-						d++;
-					}
-					if(a==10) break;
-					_skip:
-					if(++c>=3) {a=a<10?a+1:a;c=0;}
-				} while(--i>=0);
-				if(i==38) {fadeType^=1;fadeIndex=-1;}
-			} else {
-				a=9;
-				do {
-					if(i>=39) goto _skip2;
-					if(fadeDensity[i]!=a) {
-						fadeDensity[i]=a;
-						fixJobPut(i,16,FIX_COLUMN_WRITE,14,fadeData[a]);
-						d++;
-					}
-					if(a==0) break;
-					_skip2:
-					if(++c>=3) {a=a>0?a-1:a;c=0;}
-				} while(--i>=0);
-				if(i==38) {fadeType^=1;fadeIndex=-1;}
-			}
-		}
-
-		//display logo
-		a=(DAT_frameCounter>>6)&0x3;
-		if(a!=logo) {
-			ushort *data;
-			logo=a;
-
-			switch(logo) {
-				case 0:
-					data=(ushort*)&logo_95;
-					palJobPut(13,1,&logo95_Palettes.data);
-				break;
-				case 1:
-					data=(ushort*)&logo_96;
-					palJobPut(13,1,&logo96_Palettes.data);
-				break;
-				case 2:
-					data=(ushort*)&logo_97;
-					palJobPut(13,1,&logo97_Palettes.data);
-				break;
-				default:
-					data=(ushort*)&logo_98;
-					palJobPut(13,1,&logo98_Palettes.data);
-				break;
-			}
-			fixJobPut(23,6,FIX_LINE_WRITE,13,data);
-			fixJobPut(23,7,FIX_LINE_WRITE,13,data+13);
-			fixJobPut(23,8,FIX_LINE_WRITE,13,data+26);
-			fixJobPut(23,9,FIX_LINE_WRITE,13,data+39);
-			fixJobPut(23,10,FIX_LINE_WRITE,13,data+52);
-			fixJobPut(23,11,FIX_LINE_WRITE,13,data+65);
-		}
-		jobMeterColor(JOB_GREEN);
-	}
-}
-
-void colorStreamDemoA()
-{}
-
-void colorStreamDemoB()
-{}
-
-void testCallBack() {
-	if(volMEMBYTE(P1_EDGE)&JOY_A)
-		callBackCounter++;
-}
-
-#define	CURSOR_MAX	2
-static const uint demos[]={(uint)pictureDemo,(uint)seafighter,(uint)aSpriteDemo,(uint)fixDemo,(uint)rasterScrollDemo,(uint)desertRaster,(uint)colorStreamDemoA,(uint)colorStreamDemoB};
-
-int main(void) {
-	ushort cursor=0;
-	void (*demo)();
-
-	clearFixLayer();
-	initGfx();
-
-	palJobPut(0,8,fixPalettes);
-
-	//if(setup4P())
-	//	fixPrint(2,4,7,3,"4P! :)");
-	//else fixPrint(2,4,7,3,"no 4P :(");
-
-	backgroundColor(0x7bbb);
-
-	//using VBL callbacks to count global A button presses
-	callBackCounter=0;
-	VBL_callBack=testCallBack;
-	VBL_skipCallBack=testCallBack;
-
-	fixPrintf1(0,2,1,3,"RAM usage: 0x%04x (%d)",((uint)&_end)-0x100000,((uint)&_end)-0x100000);
-
-	while(1) {
-		SCClose();
-		waitVBlank();
-
-		p1=volMEMBYTE(P1_CURRENT);
-		p1e=volMEMBYTE(P1_EDGE);
-
-		if(p1e&JOY_UP)		cursor=cursor>0?cursor-1:CURSOR_MAX;
-		if(p1e&JOY_DOWN)	cursor=cursor<CURSOR_MAX?cursor+1:0;
-		if(p1e&JOY_A) {
-			demo=(void*)demos[cursor];
-			demo();
-			clearFixLayer();
-			volMEMWORD(0x401ffe)=0x7bbb; //restore BG color
-		}
-
-		//if(p1&JOY_B) {
-		//	tempTests();
-		//	clearFixLayer();
-		//}
-
-		fixPrintf1(0,3,1,3,"CB counter:%d",callBackCounter);
-		fixPrint(8,10,cursor==0?2:4,3,"Picture demo");
-		fixPrint(8,11,cursor==1?2:4,3,"Seafighter");
-		fixPrint(8,12,cursor==2?2:4,3,"Options");
-
-		fixPrint(8,20,4,3,"(P1 START - Menu return)");
-	}
 }
