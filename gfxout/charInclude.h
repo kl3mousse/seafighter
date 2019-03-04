@@ -2,6 +2,8 @@
 //pictures
 extern const pictureInfo seafighterh02;
 extern const paletteInfo seafighterh02_Palettes;
+extern const pictureInfo demomode_seafighter_title;
+extern const paletteInfo demomode_seafighter_title_Palettes;
 extern const pictureInfo ffbg_c;
 extern const paletteInfo ffbg_c_Palettes;
 extern const pictureInfo terrypict;

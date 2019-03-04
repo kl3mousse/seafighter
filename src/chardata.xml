@@ -12,6 +12,9 @@
     <file>gfx\fighter_hugo_02.png</file>
     <flips>xyz</flips>
   </pict>
+  <pict id="demomode_seafighter_title">
+    <file>gfx\demomode_01.png</file>
+  </pict>
   <pict id="ffbg_c">
     <file>gfx\ffbg_c.png</file>
   </pict>

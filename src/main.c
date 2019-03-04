@@ -10,9 +10,15 @@
 #include "..\gfxout\charInclude.h" // include sprite metadata from DATlib
 #include "..\gfxout\fixData.h"     // include fix metadata from DATlib
 
-void sf_init(void);
-void sf_demomode(void);
+// ngsdk prototypes
+bool NGSDK_SHOWINFO;           //1: will display current mode on FIX layer. 0: normal play.
+#define NGSDK_DEMOTIMER_DURATION 1200 // duration of demo mode when no Credit.
+#define NGSDK_FLASHTIMER_DURATION 60 // duration for blinking of INSERT COIN, PRESS START, ..
 
+void ngsdk_init(void);
+void ngsdk_demomode(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_demosound);
+
+// NeoHomebrew init
 
 typedef struct bkp_ram_info
 {
@@ -52,11 +58,12 @@ void displaySoftDipsMVS(void);
 void displaySoftDipsAES(void);
 void playerStartAES(void);
 
+
 // main loop ////////////////////////////////////////////////////////////////////
 
 void USER(void)
 {
-	int demo_timer=600;
+	int demo_timer=NGSDK_DEMOTIMER_DURATION;
 	int flash_timer=0;
 	int P1_continue_timer=0;
 	int P2_continue_timer=0;
@@ -70,12 +77,19 @@ void USER(void)
 	int AES_P1_state=0;
 	int AES_P2_state=0;
 
+//ngsdk
+  uchar mvs_demosound;
+  int isMVSorAES; // 1 = MVS, 2 = AES
+
 	LSPCmode=0x900;
 
 	initGfx();
 	clearFixLayer();
 	clearSprites(1, 381);
-		sf_init();
+	mvs_demosound=volMEMBYTE(0x10FD8B);
+
+	ngsdk_init();
+
 	SCClose();
 
 
@@ -88,8 +102,9 @@ void USER(void)
 		p2=volMEMBYTE(P2_CURRENT); // read P2 inputs
 		ps=volMEMBYTE(PS_CURRENT); // read START button inputs
 
+
 		flash_timer+=1;
-		if(flash_timer == 60) flash_timer=0;
+		if(flash_timer == NGSDK_FLASHTIMER_DURATION) flash_timer=0;
 
 		// INIT MODE /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -156,51 +171,35 @@ void USER(void)
 
 		if(volMEMBYTE(0x10FDAE)==2 && volMEMBYTE(0x10FDAF)==1) // bios_user_request=2, bios_user_mode=1
 		{
-			volMEMWORD(0x401ffe)=0x7022; // background color
-			volMEMWORD(0x400002)=0x79BB; // fix layer font color
-			volMEMWORD(0x400004)=0x7022; // fix layer background color
 
-			fixPrintf( 2, 4,0,0,"============ DEMO MODE ============= ");
-			fixPrintf( 2, 5,0,0,"TIMER: %02d",	demo_timer/60);
+			if(volMEMBYTE(0x10FD82)>0){isMVSorAES=1;}else{isMVSorAES=2;};
 
-			sf_demomode();
-// 			fixPrintf( 2, 6,0,0,"%08d",	bkp_data.save_slot[9]);
+			ngsdk_demomode(demo_timer, isMVSorAES, flash_timer, mvs_demosound);
+			// 			fixPrintf( 2, 6,0,0,"%08d",	bkp_data.save_slot[9]);
 
 
 			// MVS BIOS /////////////////////////////////////////////
-			if(volMEMBYTE(0x10FD82)>0)
+			if(isMVSorAES==1)
 			{
-				if(demo_timer==600)
+				if(demo_timer==NGSDK_DEMOTIMER_DURATION)
 				{
-					fixPrintf(15, 5,0,0,"-- MVS --");
-					displayRanking(); 	  // ranking table
-					displaySoftDipsMVS(); // MVS soft dips
-
 					// fill AES soft dips with MVS soft dip data (for MVS free play mode)
 					global_data.aes_soft_dip_lives		=	volMEMBYTE(0x10FD88);  // MVS SOFT DIP 5 (LIVES)
 					global_data.aes_soft_dip_continues	=	volMEMBYTE(0x10FD89);  // MVS SOFT DIP 6 (CONTINUES)
 					global_data.aes_soft_dip_difficulty	=	volMEMBYTE(0x10FD8A);  // MVS SOFT DIP 7 (DIFFICULTY)
 				}
-
-				if(flash_timer>30)	fixPrintf(14, 8,0,0,"INSERT COIN");
-				else				fixPrintf(14, 8,0,0,"           ");
 			}
 
-
 			// AES BIOS /////////////////////////////////////////////
-			if(volMEMBYTE(0x10FD82)==0)
+			if(isMVSorAES==2)
 			{
-				if(demo_timer==600)
+				if(demo_timer==NGSDK_DEMOTIMER_DURATION)
 				{
-					fixPrintf(15, 5,0,0,"-- AES --");
 					displayRanking(); 	  // ranking table
 					displaySoftDipsAES(); // AES soft dips
 					AES_P1_credits=global_data.aes_soft_dip_continues; // add virtual credits
 					AES_P2_credits=global_data.aes_soft_dip_continues; // add virtual credits
 				}
-
-				if(flash_timer>30)	fixPrintf(14, 8,0,0,"PRESS START");
-				else				fixPrintf(14, 8,0,0,"           ");
 			}
 
 			// DEMO END /////////////////////////////////////////////
@@ -918,7 +917,7 @@ void displayRanking(void)
 {
 	int i;
 	int letter1, letter2, letter3;
-	waitVBlank();
+//	waitVBlank();
 
 //	fixPrintf(24,13,0,0,"BKP-0 %08d", bkp_data.save_slot[0]);
 //	fixPrintf(24,14,0,0,"BKP-1 %08d", bkp_data.save_slot[1]);
@@ -956,14 +955,6 @@ void displayRanking(void)
 
 void displaySoftDipsMVS(void)
 {
-	fixPrintf( 21,12,0,0,"MVS SOFT DIP DATA");
-
-	fixPrintf( 21,14,0,0,"PLAY TIME : %02d:%02d", convertHexToDecimal(volMEMBYTE(0x10FD84)),convertHexToDecimal(volMEMBYTE(0x10FD85))); // DIP 1 and 2
-	fixPrintf( 21,15,0,0,"CONT.TIME : %02d:%02d", convertHexToDecimal(volMEMBYTE(0x10FD86)),convertHexToDecimal(volMEMBYTE(0x10FD87))); // DIP 3 and 4
-	fixPrintf( 21,16,0,0,"LIVES     : %02d", volMEMBYTE(0x10FD88));  // DIP 5
-	fixPrintf( 21,17,0,0,"CONTINUES : %02d", volMEMBYTE(0x10FD89));  // DIP 6
-	fixPrintf( 21,18,0,0,"DIFFICULTY: %02d", volMEMBYTE(0x10FD8A));  // DIP 7
-	fixPrintf( 21,19,0,0,"DEMO SOUND: %02d", volMEMBYTE(0x10FD8B));  // DIP 8
 }
 
 void displaySoftDipsAES(void)
@@ -975,8 +966,10 @@ void displaySoftDipsAES(void)
 	fixPrintf( 21,16,0,0,"DIFFICULTY: %02d", global_data.aes_soft_dip_difficulty);  // DIP 7
 }
 
-
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 // seaFighter ////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 
 #define FRONT_START_X 157
 #define FRONT_START_Y 24
@@ -992,50 +985,83 @@ void displaySoftDipsAES(void)
 
 int x=94+48;
 int y=54;
-picture seafighter_ship;
 ushort flipMode=0;
+picture demomode_title;
+picture seafighter_ship;
 
-void sf_init(void)
+
+void ngsdk_init(void)
 {
-	//jobMeterSetup(true);
+	pictureInit(&demomode_title, &demomode_seafighter_title, 1, 1, 1, 1,FLIP_NONE);
+	palJobPut(1,demomode_seafighter_title.palInfo->count,demomode_seafighter_title.palInfo->data);
 
-	//LSPCmode=0x1c00;
+	pictureInit(&seafighter_ship, &seafighterh02, 21, 21, x, y,FLIP_NONE);
+	palJobPut(21,seafighterh02.palInfo->count,seafighterh02.palInfo->data);
 
-	pictureInit(&seafighter_ship, &seafighterh02, 1, 50, x, y,FLIP_NONE);
-	palJobPut(50,seafighterh02.palInfo->count,seafighterh02.palInfo->data);
+	volMEMWORD(0x401ffe)=0x7022; // background color
+	volMEMWORD(0x400002)=0x79BB; // fix layer font color
+	volMEMWORD(0x400004)=0x7022; // fix layer background color
+
+	NGSDK_SHOWINFO = false;
+
 }
 
-void sf_demomode(void)
+// demo mode: this routine is called once per VBlank during demo mode
+void ngsdk_demomode(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_demosound)
 {
 
+	if (NGSDK_SHOWINFO)
+	{
+		fixPrintf( 2, 4,0,0,"============ DEMO MODE ============%02d ", mvs_demosound);
+		if (isMVSorAES==1) fixPrintf(15, 5,0,0,"** MVS **"); //MVS detected
+		if (isMVSorAES==2) fixPrintf(15, 5,0,0,"** AES **"); //AES detected
+		fixPrintf( 2, 5,0,0,"TIMER: %02d",	demo_timer/60);
 
-		//SCClose();
-		//waitVBlank();
 
-		ps=volMEMBYTE(PS_CURRENT);
-		p1=volMEMBYTE(P1_CURRENT);
-		p1e=volMEMBYTE(P1_EDGE);
+	if(demo_timer==NGSDK_DEMOTIMER_DURATION) // first time in DEMO mode ?
+	{
+		displayRanking(); 	  // ranking table
 
-
-		if(p1&JOY_A) {
-			if(p1e&JOY_UP)		flipMode|=FLIP_Y;
-			if(p1e&JOY_DOWN)	flipMode&=~FLIP_Y;
-			if(p1e&JOY_RIGHT)	flipMode|=FLIP_X;
-			if(p1e&JOY_LEFT)	flipMode&=~FLIP_X;
-		} else {
-			if(p1&JOY_UP)		y--;
-			if(p1&JOY_DOWN)		y++;
-			if(p1&JOY_LEFT)		x--;
-			if(p1&JOY_RIGHT)	x++;
+		if (isMVSorAES==1) // MVS : display MVS Soft dips
+		{
+			fixPrintf( 21,12,0,0,"MVS SOFT DIP DATA");
+			fixPrintf( 21,14,0,0,"PLAY TIME : %02d:%02d", convertHexToDecimal(volMEMBYTE(0x10FD84)),convertHexToDecimal(volMEMBYTE(0x10FD85))); // DIP 1 and 2
+			fixPrintf( 21,15,0,0,"CONT.TIME : %02d:%02d", convertHexToDecimal(volMEMBYTE(0x10FD86)),convertHexToDecimal(volMEMBYTE(0x10FD87))); // DIP 3 and 4
+			fixPrintf( 21,16,0,0,"LIVES     : %02d", volMEMBYTE(0x10FD88));  // DIP 5
+			fixPrintf( 21,17,0,0,"CONTINUES : %02d", volMEMBYTE(0x10FD89));  // DIP 6
+			fixPrintf( 21,18,0,0,"DIFFICULTY: %02d", volMEMBYTE(0x10FD8A));  // DIP 7
+			fixPrintf( 21,19,0,0,"DEMO SOUND: %02d", volMEMBYTE(0x10FD8B));  // DIP 8
+			fixPrintf( 21,20,0,0,"DEMO SOUND: %02d", mvs_demosound);  // DIP 8
+		}
+		if (isMVSorAES==2) // AES : display AES Soft dips
+		{
+			displaySoftDipsAES(); // MVS soft dips
 		}
 
-		pictureSetFlip(&seafighter_ship,flipMode);
+	}
+}
+	if (isMVSorAES==1) // MVS : display INSERT COIN
+	{
+		if(flash_timer>(NGSDK_FLASHTIMER_DURATION/2))	fixPrintf(14, 8,0,0,"INSERT COIN");
+		else				fixPrintf(14, 8,0,0,"           ");
+	};
+
+	if (isMVSorAES==2) // AES : display PRESS START
+	{
+		if(flash_timer>(NGSDK_FLASHTIMER_DURATION/2))	fixPrintf(14, 8,0,0,"PRESS START");
+		else				fixPrintf(14, 8,0,0,"           ");
+	}
+
+
+
+
+
+		p1=volMEMBYTE(P1_CURRENT);
+		if(p1&JOY_UP)		  y--;
+		if(p1&JOY_DOWN)		y++;
+	  if(p1&JOY_LEFT)		x--;
+		if(p1&JOY_RIGHT)	x++;
+
 		pictureSetPos(&seafighter_ship, x, y);
-
-
-//			SC234Put(rasterAddr,VRAM_POSX(x)); //restore position
-//			TInextTable=0;
-
-
-
+		pictureSetPos(&demomode_title, 1, 1);
 }
