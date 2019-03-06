@@ -17,6 +17,7 @@ bool NGSDK_SHOWINFO;           //1: will display current mode on FIX layer. 0: n
 
 void ngsdk_init(void);
 void ngsdk_demomode(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_demosound);
+void ngsdk_titlemode(int isMVSorAES, int flash_timer, uchar title_timer, uchar dev_mode, uchar creditsP1, uchar USmode, uchar creditsP2_US);
 
 // NeoHomebrew init
 
@@ -54,8 +55,6 @@ static const char LetterList[30][3] =
 // function prototypes
 int convertHexToDecimal(int hexadecimal);
 void displayRanking(void);
-void displaySoftDipsMVS(void);
-void displaySoftDipsAES(void);
 void playerStartAES(void);
 
 
@@ -78,8 +77,13 @@ void USER(void)
 	int AES_P2_state=0;
 
 //ngsdk
-  uchar mvs_demosound;
-  int isMVSorAES; // 1 = MVS, 2 = AES
+  uchar mvs_demosound=0;
+  int isMVSorAES=0; // 1 = MVS, 2 = AES
+	uchar title_timer=0; // BIOS-COMPULSION-TIMER - timer for forced game start
+	uchar dev_mode=0; // 1 = DevMode ON. 0 = DevMode Off
+	uchar creditsP1=0; // credits in MVS
+	uchar USmode=0; // 1 if MVS US mode (2 players credit mode)
+	uchar creditsP2=0; // credits in MVS for Player 2 when US mode (0 otherwise)
 
 	LSPCmode=0x900;
 
@@ -175,8 +179,6 @@ void USER(void)
 			if(volMEMBYTE(0x10FD82)>0){isMVSorAES=1;}else{isMVSorAES=2;};
 
 			ngsdk_demomode(demo_timer, isMVSorAES, flash_timer, mvs_demosound);
-			// 			fixPrintf( 2, 6,0,0,"%08d",	bkp_data.save_slot[9]);
-
 
 			// MVS BIOS /////////////////////////////////////////////
 			if(isMVSorAES==1)
@@ -195,8 +197,6 @@ void USER(void)
 			{
 				if(demo_timer==NGSDK_DEMOTIMER_DURATION)
 				{
-					displayRanking(); 	  // ranking table
-					displaySoftDipsAES(); // AES soft dips
 					AES_P1_credits=global_data.aes_soft_dip_continues; // add virtual credits
 					AES_P2_credits=global_data.aes_soft_dip_continues; // add virtual credits
 				}
@@ -216,36 +216,26 @@ void USER(void)
 
 		if(volMEMBYTE(0x10FDAE)==3 && volMEMBYTE(0x10FDAF)==1) // bios_user_request=3, bios_user_mode=1
 		{
+
 			volMEMBYTE(0x10FEC5)=0x01; // BIOS_COMPULSION_FLAG prevents that compulsion doesn't restart twice, if still credits available from previous gameplay
-
-			volMEMWORD(0x401ffe)=0x1351; // background color
-			volMEMWORD(0x400002)=0x6BDA; // fix layer font color
-			volMEMWORD(0x400004)=0x1351; // fix layer background color
-
-			fixPrintf( 2, 4,0,0,"============ TITLE MVS =============");
-			fixPrintf(16, 9,0,0,"TIME:%02d", convertHexToDecimal(volMEMBYTE(0x10FDDA))); // BIOS-COMPULSION-TIMER - timer for forced game start
-
-			if(flash_timer>30)	fixPrintf(14,11,0,0,"PRESS START!");
-			else				fixPrintf(14,11,0,0,"            ");
-
-			// display credit counter(s) ////////////////////////////////////
-
-			if(volMEMBYTE(0x10FE80)>0) // if developer mode is active, display dev mode credit counters
+			title_timer = convertHexToDecimal(volMEMBYTE(0x10FDDA));
+			if(volMEMBYTE(0x10FE80)>0) // if developer mode is active, Get dev mode credit counters
 			{
-				fixPrintf( 2,23,0,0,"DevCRED P1: %02d", convertHexToDecimal(volMEMBYTE(0x10FE00))); // dev mode credit counter P1
-				// display separete P2 credit counter if BIOS-COUNTRY-CODE is 1=USA
-				if(volMEMBYTE(0x10FD83)==1) fixPrintf(24,23,0,0,"DevCRED P2: %02d", convertHexToDecimal(volMEMBYTE(0x10FE01)));  // dev mode credit counter P2
-
-			}else{
-
-
-				fixPrintf( 2,23,0,0,"CREDITS P1: %02d", convertHexToDecimal(volMEMBYTE(0xD00034)));  // credit counter P1
-				// fixPrintf( 2,22,0,0,"DevCRED P1: %02d", convertHexToDecimal(volMEMBYTE(0x10FE00)));  // dev mode credit counter P1
-				// display separete P2 credit counter if BIOS-COUNTRY-CODE is 1=USA
-				if(volMEMBYTE(0x10FD83)==1) fixPrintf(24,23,0,0,"CREDITS P2: %02d", convertHexToDecimal(volMEMBYTE(0xD00035)));	// credit counter P2
-				// if(volMEMBYTE(0x10FD83)==1) fixPrintf(24,22,0,0,"DevCRED P2: %02d", convertHexToDecimal(volMEMBYTE(0x10FE01)));	// dev mode credit counter P2
+				dev_mode = 1;
+				creditsP1 = convertHexToDecimal(volMEMBYTE(0x10FE00));
+				USmode = volMEMBYTE(0x10FD83);
+				creditsP2 = convertHexToDecimal(volMEMBYTE(0x10FE01));
+			}
+			else
+			{
+				dev_mode = 0;
+				creditsP1 = convertHexToDecimal(volMEMBYTE(0xD00034)); // credit counter P1
+				// get separete P2 credit counter if BIOS-COUNTRY-CODE is 1=USA
+				USmode = volMEMBYTE(0x10FD83);
+				creditsP2 = convertHexToDecimal(volMEMBYTE(0xD00035));
 			}
 
+			ngsdk_titlemode(1, flash_timer, title_timer, dev_mode, creditsP1, USmode, creditsP2);
 		}
 
 		// TITLE MODE AES ////////////////////////////////////////////////////////////////////////////////////////
@@ -261,13 +251,7 @@ void USER(void)
 
 		if(AES_user_mode==1)
 		{
-			fixPrintf( 2, 4,0,0,"============ TITLE AES =============");
-
-			if(flash_timer>30)	fixPrintf(14, 9,0,0,"PRESS START!");
-			else				fixPrintf(14, 9,0,0,"            ");
-
-			fixPrintf( 2,23,0,0,"CREDITS P1: %02d", AES_P1_credits);
-			fixPrintf(24,23,0,0,"CREDITS P2: %02d", AES_P2_credits);
+			ngsdk_titlemode(2, flash_timer, title_timer, dev_mode, AES_P1_credits, USmode, AES_P2_credits);
 
 			//  Player 1 has started the game from the title mode
 			if(volMEMBYTE(0x10FDB6)==1 && volMEMBYTE(0x10FDB4)==1) // BIOS-PLAYER-MOD1 == 1 (P1 playing) && START_FLAG == 1
@@ -286,6 +270,8 @@ void USER(void)
 				AES_user_mode=2;	// change to game mode
 				clearFixLayer();	// clear title screen
 			}
+
+
 		}
 
 		// GAME MODE AES /////////////////////////////////////////////////////////////////////////////////////////
@@ -750,25 +736,30 @@ void USER(void)
 
 		}
 
-//		fixPrintf( 26, 5,0,0,"NGH : %06d", volMEMWORD(0x108)); // NGH number
-//		fixPrintf( 26, 5,0,0,"DEV-MODE %03d", volMEMBYTE(0x10FE80)); // non-zero = developer mode is active
-		fixPrintf( 26, 3,0,0,"FRAMES: %04d",	DAT_frameCounter);
+		if (NGSDK_SHOWINFO)
+		{
 
-		if(volMEMBYTE(0x10FD83)==0) fixPrintf(11,3,0,0,"JAP"); // BIOS-COUNTRY-CODE - 0=JAP, 1=USA, 2=EUR
-		if(volMEMBYTE(0x10FD83)==1) fixPrintf(11,3,0,0,"USA"); // BIOS-COUNTRY-CODE - 0=JAP, 1=USA, 2=EUR
-		if(volMEMBYTE(0x10FD83)==2) fixPrintf(11,3,0,0,"EUR"); // BIOS-COUNTRY-CODE - 0=JAP, 1=USA, 2=EUR
+			//		fixPrintf( 26, 5,0,0,"NGH : %06d", volMEMWORD(0x108)); // NGH number
+			//		fixPrintf( 26, 5,0,0,"DEV-MODE %03d", volMEMBYTE(0x10FE80)); // non-zero = developer mode is active
+					fixPrintf( 26, 3,0,0,"FRAMES: %04d",	DAT_frameCounter);
 
-		if(volMEMBYTE(0x10FD82)==0) fixPrintf( 2,3,0,0,"BIOS:AES-"); // BIOS-MVS-FLAG - 0=AES, 128(0x80)=MVS
-		if(volMEMBYTE(0x10FD82)>0 ) fixPrintf( 2,3,0,0,"BIOS:MVS-"); // BIOS-MVS-FLAG - 0=AES, 128(0x80)=MVS
+					if(volMEMBYTE(0x10FD83)==0) fixPrintf(11,3,0,0,"JAP"); // BIOS-COUNTRY-CODE - 0=JAP, 1=USA, 2=EUR
+					if(volMEMBYTE(0x10FD83)==1) fixPrintf(11,3,0,0,"USA"); // BIOS-COUNTRY-CODE - 0=JAP, 1=USA, 2=EUR
+					if(volMEMBYTE(0x10FD83)==2) fixPrintf(11,3,0,0,"EUR"); // BIOS-COUNTRY-CODE - 0=JAP, 1=USA, 2=EUR
 
-		fixPrintf( 2,25,0,0,"------------------------------------");
-		fixPrintf( 2,26,0,0,"INIT-FLAG   : %02d", global_data.user_request_0_flag); // 0 = init mode was not called, 1 = init mode was called by BIOS
-		fixPrintf( 2,27,0,0,"USER-REQUEST: %02d", volMEMBYTE(0x10FDAE)); // 0 = Init, 1 = Boot animation, 2 = Demo, 3 = Game (set by SYSTEM BIOS)
-		fixPrintf( 2,28,0,0,"USER-MODE   : %02d", volMEMBYTE(0x10FDAF)); // Used by the game to tell what it's doing: 0:Init/Boot animation, 1:Title/Demo, 2:Game
+					if(volMEMBYTE(0x10FD82)==0) fixPrintf( 2,3,0,0,"BIOS:AES-"); // BIOS-MVS-FLAG - 0=AES, 128(0x80)=MVS
+					if(volMEMBYTE(0x10FD82)>0 ) fixPrintf( 2,3,0,0,"BIOS:MVS-"); // BIOS-MVS-FLAG - 0=AES, 128(0x80)=MVS
 
-		fixPrintf(22,26,0,0,"START FLAG  : %02d", volMEMBYTE(0x10FDB4)); // indicates which player has pressed the START_BUTTON (P1=1, P2=2)
-		fixPrintf(22,27,0,0,"PLAYER-MOD1 : %02d", volMEMBYTE(0x10FDB6)); // Player 1 status. 0:Never played, 1:Playing, 2:Continue option being displayed, 3:Game over
-		fixPrintf(22,28,0,0,"PLAYER-MOD2 : %02d", volMEMBYTE(0x10FDB7)); // Player 1 status. 0:Never played, 1:Playing, 2:Continue option being displayed, 3:Game over
+					fixPrintf( 2,25,0,0,"------------------------------------");
+					fixPrintf( 2,26,0,0,"INIT-FLAG   : %02d", global_data.user_request_0_flag); // 0 = init mode was not called, 1 = init mode was called by BIOS
+					fixPrintf( 2,27,0,0,"USER-REQUEST: %02d", volMEMBYTE(0x10FDAE)); // 0 = Init, 1 = Boot animation, 2 = Demo, 3 = Game (set by SYSTEM BIOS)
+					fixPrintf( 2,28,0,0,"USER-MODE   : %02d", volMEMBYTE(0x10FDAF)); // Used by the game to tell what it's doing: 0:Init/Boot animation, 1:Title/Demo, 2:Game
+
+					fixPrintf(22,26,0,0,"START FLAG  : %02d", volMEMBYTE(0x10FDB4)); // indicates which player has pressed the START_BUTTON (P1=1, P2=2)
+					fixPrintf(22,27,0,0,"PLAYER-MOD1 : %02d", volMEMBYTE(0x10FDB6)); // Player 1 status. 0:Never played, 1:Playing, 2:Continue option being displayed, 3:Game over
+					fixPrintf(22,28,0,0,"PLAYER-MOD2 : %02d", volMEMBYTE(0x10FDB7)); // Player 1 status. 0:Never played, 1:Playing, 2:Continue option being displayed, 3:Game over
+
+		}
 	}
 
 	__asm__ ("jmp 0xc00444 \n"); // BIOSF_SYSTEM_RETURN - return to bios control
@@ -953,18 +944,6 @@ void displayRanking(void)
 	}
 }
 
-void displaySoftDipsMVS(void)
-{
-}
-
-void displaySoftDipsAES(void)
-{
-	fixPrintf( 21,12,0,0,"AES SOFT DIP DATA");
-
-	fixPrintf( 21,14,0,0,"LIVES     : %02d", global_data.aes_soft_dip_lives);  // DIP 5
-	fixPrintf( 21,15,0,0,"CONTINUES : %02d", global_data.aes_soft_dip_continues);  // DIP 6
-	fixPrintf( 21,16,0,0,"DIFFICULTY: %02d", global_data.aes_soft_dip_difficulty);  // DIP 7
-}
 
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
@@ -989,7 +968,7 @@ ushort flipMode=0;
 picture demomode_title;
 picture seafighter_ship;
 
-
+// launched once when USER mode is active
 void ngsdk_init(void)
 {
 	pictureInit(&demomode_title, &demomode_seafighter_title, 1, 1, 1, 1,FLIP_NONE);
@@ -1035,7 +1014,10 @@ void ngsdk_demomode(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_d
 		}
 		if (isMVSorAES==2) // AES : display AES Soft dips
 		{
-			displaySoftDipsAES(); // MVS soft dips
+			fixPrintf( 21,12,0,0,"AES SOFT DIP DATA");
+			fixPrintf( 21,14,0,0,"LIVES     : %02d", global_data.aes_soft_dip_lives);  // DIP 5
+			fixPrintf( 21,15,0,0,"CONTINUES : %02d", global_data.aes_soft_dip_continues);  // DIP 6
+			fixPrintf( 21,16,0,0,"DIFFICULTY: %02d", global_data.aes_soft_dip_difficulty);  // DIP 7
 		}
 
 	}
@@ -1052,10 +1034,7 @@ void ngsdk_demomode(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_d
 		else				fixPrintf(14, 8,0,0,"           ");
 	}
 
-
-
-
-
+		//insert your game demo code here
 		p1=volMEMBYTE(P1_CURRENT);
 		if(p1&JOY_UP)		  y--;
 		if(p1&JOY_DOWN)		y++;
@@ -1064,4 +1043,61 @@ void ngsdk_demomode(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_d
 
 		pictureSetPos(&seafighter_ship, x, y);
 		pictureSetPos(&demomode_title, 1, 1);
+}
+
+// NeoGeoSDK Title mode
+void ngsdk_titlemode(int isMVSorAES, int flash_timer, uchar title_timer, uchar dev_mode, uchar creditsP1, uchar USmode, uchar creditsP2)
+{
+	if (NGSDK_SHOWINFO)
+	{
+		if(isMVSorAES==1)
+		{
+			volMEMWORD(0x401ffe)=0x1351; // background color
+			volMEMWORD(0x400002)=0x6BDA; // fix layer font color
+			volMEMWORD(0x400004)=0x1351; // fix layer background color
+			fixPrintf( 2, 4,0,0,"============ TITLE MVS =============");
+			fixPrintf(16, 9,0,0,"TIME:%02d", title_timer);
+			if(flash_timer>30)	fixPrintf(14,11,0,0,"PRESS START!");
+			else				fixPrintf(14,11,0,0,"            ");
+		  if(dev_mode ==1)
+			{
+				fixPrintf( 2,23,0,0,"DevCRED P1: %02d", creditsP1); // dev mode credit counter P1
+				// display separete P2 credit counter if BIOS-COUNTRY-CODE is 1=USA
+				if(USmode==1) fixPrintf(24,23,0,0,"DevCRED P2: %02d", creditsP2);  // dev mode credit counter P2
+			}
+			else
+			{
+				fixPrintf( 2,23,0,0,"CREDITS P1: %02d", creditsP1);  // credit counter P1
+				// display separete P2 credit counter if BIOS-COUNTRY-CODE is 1=USA
+				if(USmode==1) fixPrintf(24,23,0,0,"CREDITS P2: %02d", creditsP2);	// credit counter P2
+			}
+		}
+		else if(isMVSorAES==2)
+		{
+			fixPrintf( 2, 4,0,0,"============ TITLE AES =============");
+
+			if(flash_timer>30)	fixPrintf(14, 9,0,0,"PRESS START!");
+			else				fixPrintf(14, 9,0,0,"            ");
+
+			fixPrintf( 2,23,0,0,"CREDITS P1: %02d", creditsP1);
+			fixPrintf(24,23,0,0,"CREDITS P2: %02d", creditsP2);
+
+		}
+	}
+
+  // insert your game title code here:
+	fixPrintf(16, 9,0,0,"TIME:%02d", title_timer);
+	if(flash_timer>30)	fixPrintf(14,11,0,0,"PRESS START!");
+	else				fixPrintf(14,11,0,0,"            ");
+
+
+	p1=volMEMBYTE(P1_CURRENT);
+	if(p1&JOY_UP)		  y-=2;
+	if(p1&JOY_DOWN)		y+=2;
+	if(p1&JOY_LEFT)		x-=2;
+	if(p1&JOY_RIGHT)	x+=2;
+
+	pictureSetPos(&seafighter_ship, x, y);
+	//pictureSetPos(&demomode_title, x, y);
+
 }
