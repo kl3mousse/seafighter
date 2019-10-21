@@ -15,6 +15,52 @@
 
 int x=94+48;
 int y=54;
+picture demomode_title;
+picture seafighter_ship;
+
+/*******************************
+  MVS GAME INSTALL ONCE
+*******************************/
+void ngMVSGameInstallOnce(){
+  typedef struct bkp_ram_info
+  {
+  	WORD debug_dips;
+  	//	256 bytes backup block
+  	//	BYTE save_slot[254];
+  	//	WORD save_slot[126];
+  		DWORD save_slot[62];
+  }
+  bkp_ram_info;
+  bkp_ram_info bkp_data;
+
+  // initial load of default ranking data
+
+  // high scores
+  bkp_data.save_slot[0]=18000000;
+  bkp_data.save_slot[1]=14000000;
+  bkp_data.save_slot[2]=12000000;
+  bkp_data.save_slot[3]=10800000;
+  bkp_data.save_slot[4]=10400000;
+  bkp_data.save_slot[5]=10200000;
+  bkp_data.save_slot[6]=10080000;
+  bkp_data.save_slot[7]=10040000;
+  bkp_data.save_slot[8]=10020000;
+  bkp_data.save_slot[9]=10008000;
+
+  // three letter names
+  bkp_data.save_slot[10]=11200824;
+  bkp_data.save_slot[11]=11081600;
+  bkp_data.save_slot[12]=11130114;
+  bkp_data.save_slot[13]=11282828;
+  bkp_data.save_slot[14]=11140515;
+  bkp_data.save_slot[15]=11070515;
+  bkp_data.save_slot[16]=11132219; // MVS hex= A9 DD 3B?
+  bkp_data.save_slot[17]=11201516;
+  bkp_data.save_slot[18]=11200514;
+  bkp_data.save_slot[19]=11181411;
+
+};
+
 
 /*******************************
 	USER MODE INITIALIZATION
@@ -32,9 +78,12 @@ void ngUserModeInit(){
 
 };
 
-/*******************************
+/***************************************************************************
 	DEMO MODE LOOP
-*******************************/
+
+  This loop is called while waiting for the player to insert coins (MVS)
+  or to Press Start (AES). Once done, it moves to Title mode.
+***************************************************************************/
 void ngDemoModeLoop(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_demosound){
   p1=volMEMBYTE(P1_CURRENT);
   if(p1&JOY_UP)		  y--;

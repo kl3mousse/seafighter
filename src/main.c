@@ -13,8 +13,6 @@
 
 // ngsdk prototypes
 bool NGSDK_SHOWINFO;           //1: will display current mode on FIX layer. 0: normal play.
-#define NGSDK_DEMOTIMER_DURATION 1200 // duration of demo mode when no Credit.
-#define NGSDK_FLASHTIMER_DURATION 60 // duration for blinking of INSERT COIN, PRESS START, ..
 
 void ngsdk_init(void);
 void ngsdk_demomode(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_demosound);
@@ -125,31 +123,7 @@ void USER(void)
 			waitVBlank();
 			global_data.user_request_0_flag=1; // indicates that user_request=0 has been executed
 
-			// initial load of default ranking data
-
-			// high scores
-			bkp_data.save_slot[0]=18000000;
-			bkp_data.save_slot[1]=14000000;
-			bkp_data.save_slot[2]=12000000;
-			bkp_data.save_slot[3]=10800000;
-			bkp_data.save_slot[4]=10400000;
-			bkp_data.save_slot[5]=10200000;
-			bkp_data.save_slot[6]=10080000;
-			bkp_data.save_slot[7]=10040000;
-			bkp_data.save_slot[8]=10020000;
-			bkp_data.save_slot[9]=10008000;
-
-			// three letter names
-			bkp_data.save_slot[10]=11200824;
-			bkp_data.save_slot[11]=11081600;
-			bkp_data.save_slot[12]=11130114;
-			bkp_data.save_slot[13]=11282828;
-			bkp_data.save_slot[14]=11140515;
-			bkp_data.save_slot[15]=11070515;
-			bkp_data.save_slot[16]=11132219; // MVS
-			bkp_data.save_slot[17]=11201516;
-			bkp_data.save_slot[18]=11200514;
-			bkp_data.save_slot[19]=11181411;
+			ngMVSGameInstallOnce();
 
 			break;  // exit loop and call BIOSF_SYSTEM_RETURN (tells the system that the INIT MODE has been finished)
 		}
@@ -236,6 +210,17 @@ void USER(void)
 
 			ngsdk_titlemode(1, flash_timer, title_timer, dev_mode, creditsP1, USmode, creditsP2);
 		}
+
+
+
+
+
+
+
+
+
+
+
 
 		// TITLE MODE AES ////////////////////////////////////////////////////////////////////////////////////////
 		// the AES title mode is also used by MVS in "free play" mode (hard dip switch 6 active)
