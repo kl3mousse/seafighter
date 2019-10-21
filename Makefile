@@ -45,8 +45,13 @@ install:
 #############################################
 main_pgm:
 	.\include\NeoDev\m68k\bin\as -m68000 --register-prefix-optional .\src\crt0_cart.s -o include\NeoDev\tmp\crt0_cart.o
-	gcc -I.\include\NeoDev\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\main.c -o .\include\NeoDev\tmp\main.o
-	.\include\NeoDev\m68k\bin\gcc -L.\include\NeoDev\m68k\lib -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -Wl,-T.\include\NeoDev\src\system\neocart.x .\include\NeoDev\tmp\crt0_cart.o .\include\NeoDev\tmp\main.o .\include\NeoDev\tmp\charMaps.o .\include\NeoDev\tmp\fixPals.o .\include\NeoDev\tmp\charPals.o -lDATlib -lc -lgcc -o test.o
+
+	.\include\NeoDev\m68k\bin\gcc -I.\include\NeoDev\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\nggame.c -o .\include\NeoDev\tmp\nggame.o
+
+	.\include\NeoDev\m68k\bin\gcc -I.\include\NeoDev\m68k\include -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -c src\main.c -o .\include\NeoDev\tmp\main.o
+
+	.\include\NeoDev\m68k\bin\gcc -L.\include\NeoDev\m68k\lib -m68000 -O3 -Wall -fomit-frame-pointer -ffast-math -fno-builtin -nostartfiles -nodefaultlibs -D__cart__ -Wl,-T.\include\NeoDev\src\system\neocart.x .\include\NeoDev\tmp\crt0_cart.o .\include\NeoDev\tmp\nggame.o .\include\NeoDev\tmp\main.o .\include\NeoDev\tmp\charMaps.o .\include\NeoDev\tmp\fixPals.o .\include\NeoDev\tmp\charPals.o -lDATlib -lc -lgcc -o test.o
+
 	.\include\NeoDev\m68k\bin\objcopy --gap-fill=0x00 --pad-to=0x20000 -R .data -O binary test.o dev_p1.rom
 	.\include\NeoDev\m68k\bin\romwak /f dev_p1.rom 444-p1.bin
 	.\include\NeoDev\m68k\bin\romwak /p 444-p1.bin 444-p1.bin 1024 255

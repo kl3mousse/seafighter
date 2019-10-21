@@ -1,5 +1,5 @@
 /***************************************/
-/* Seafighter by Kl3mousse             */
+/* Seafighter by kl3mousse             */
 /* for NEO GEO                         */
 /***************************************/
 
@@ -9,6 +9,7 @@
 #include <DATlib.h>
 #include "..\gfxout\charInclude.h" // include sprite metadata from DATlib
 #include "..\gfxout\fixData.h"     // include fix metadata from DATlib
+#include "nggame.h"                // where the game code should be
 
 // ngsdk prototypes
 bool NGSDK_SHOWINFO;           //1: will display current mode on FIX layer. 0: normal play.
@@ -31,8 +32,6 @@ typedef struct bkp_ram_info
 }
 bkp_ram_info;
 bkp_ram_info bkp_data;
-
-BYTE p1,p2,ps,p1e,p2e;
 
 typedef struct global_init
 {
@@ -270,8 +269,6 @@ void USER(void)
 				AES_user_mode=2;	// change to game mode
 				clearFixLayer();	// clear title screen
 			}
-
-
 		}
 
 		// GAME MODE AES /////////////////////////////////////////////////////////////////////////////////////////
@@ -868,9 +865,6 @@ void COIN_SOUND(void) // is called by MVS BIOS if user has inserted a coin
 
 
 
-
-
-
 // conversion ////////////////////////////////////////////////////////////////////////
 
 int convertHexToDecimal(int hexadecimal)
@@ -947,44 +941,20 @@ void displayRanking(void)
 
 //////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
-// seaFighter ////////////////////////////////////////////////////////////////////////
+// NeoGeoSDK ////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 
-#define FRONT_START_X 157
-#define FRONT_START_Y 24
-#define FRONT_MIN_X 8
-#define FRONT_MAX_X 307
-#define FRONT_MIN_Y 16
-#define FRONT_MAX_Y 24
+//ushort flipMode=0;
 
-#define BACK_MIN_X 8
-#define BACK_MAX_X 149
-#define BACK_MIN_Y 5
-#define BACK_MAX_Y 8
-
-int x=94+48;
-int y=54;
-ushort flipMode=0;
-picture demomode_title;
-picture seafighter_ship;
-
+//////////////////////////////////////////////////////////////////////////
 // launched once when USER mode is active
 void ngsdk_init(void)
 {
-	pictureInit(&demomode_title, &demomode_seafighter_title, 1, 1, 1, 1,FLIP_NONE);
-	palJobPut(1,demomode_seafighter_title.palInfo->count,demomode_seafighter_title.palInfo->data);
-
-	pictureInit(&seafighter_ship, &seafighterh02, 21, 21, x, y,FLIP_NONE);
-	palJobPut(21,seafighterh02.palInfo->count,seafighterh02.palInfo->data);
-
-	volMEMWORD(0x401ffe)=0x7022; // background color
-	volMEMWORD(0x400002)=0x79BB; // fix layer font color
-	volMEMWORD(0x400004)=0x7022; // fix layer background color
-
 	NGSDK_SHOWINFO = false;
-
+  ngUserModeInit();	// calls the ngUserModeInit function from nggame.c
 }
 
+//////////////////////////////////////////////////////////////////////////
 // demo mode: this routine is called once per VBlank during demo mode
 void ngsdk_demomode(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_demosound)
 {
@@ -1034,17 +1004,11 @@ void ngsdk_demomode(int demo_timer, int isMVSorAES, int flash_timer, uchar mvs_d
 		else				fixPrintf(14, 8,0,0,"           ");
 	}
 
-		//insert your game demo code here
-		p1=volMEMBYTE(P1_CURRENT);
-		if(p1&JOY_UP)		  y--;
-		if(p1&JOY_DOWN)		y++;
-	  if(p1&JOY_LEFT)		x--;
-		if(p1&JOY_RIGHT)	x++;
+	ngDemoModeLoop(demo_timer, isMVSorAES, flash_timer, mvs_demosound);
 
-		pictureSetPos(&seafighter_ship, x, y);
-		pictureSetPos(&demomode_title, 1, 1);
 }
 
+////////////////////////////////////////////////////////////////////////
 // NeoGeoSDK Title mode
 void ngsdk_titlemode(int isMVSorAES, int flash_timer, uchar title_timer, uchar dev_mode, uchar creditsP1, uchar USmode, uchar creditsP2)
 {
@@ -1086,18 +1050,5 @@ void ngsdk_titlemode(int isMVSorAES, int flash_timer, uchar title_timer, uchar d
 	}
 
   // insert your game title code here:
-	fixPrintf(16, 9,0,0,"TIME:%02d", title_timer);
-	if(flash_timer>30)	fixPrintf(14,11,0,0,"PRESS START!");
-	else				fixPrintf(14,11,0,0,"            ");
-
-
-	p1=volMEMBYTE(P1_CURRENT);
-	if(p1&JOY_UP)		  y-=2;
-	if(p1&JOY_DOWN)		y+=2;
-	if(p1&JOY_LEFT)		x-=2;
-	if(p1&JOY_RIGHT)	x+=2;
-
-	pictureSetPos(&seafighter_ship, x, y);
-	//pictureSetPos(&demomode_title, x, y);
-
+	ngTitleModeLoop(isMVSorAES, flash_timer, title_timer, dev_mode, creditsP1, USmode, creditsP2);
 }
