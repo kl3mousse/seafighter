@@ -3,22 +3,26 @@
 ![](https://img.shields.io/badge/game%20platform-MAME-blue.svg)
 ![](https://img.shields.io/badge/game%20platform-NeoSD%20(real%20MVS%20or%20AES)-blue.svg)
 
-one more neogeo homebrew... an **horizontal shooter** you can play on MAME neogeo emulator, or even on arcade MVS board with a NeoSD cadridge able to load roms.
+This project started first as a fork of Neo Thunder game (see includes below), then finally integrating DatLib SDK more than building a game engine.
+Latest target it to provide a NeoGeo mode API that would simplify the various modes the NeoGeo is providing (Demo mode, Title mode, Game mode with all the possible variations a developer has to handle to have the game working on both Console and Arcade modes). Part (most) of the code comes from NeoHomeBrew and HPman.
+
+The game is not working anymore, need to work on it.
 
 ![https://img.shields.io/badge/buildpack-gcc%20for%20win10-blue.svg]()
 
-I'm now in the middle of adding DatLib in the whole package. I've had to remove most of the code, but there are still things to clean-up. The game is not working anymore, need to work on it.
-
-
-*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Blastar, Vasiliy Familiya, Smkdan, Chris Covell...) for the assets & examples :)*
+*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Blastar, Vasiliy Familiya, Smkdan, Chris Covelln NeoHomebrew...) for the assets & examples :)*
 
 # key programs
-- run_me_first.bat: will setup Windows PATH to be able to access compilers and libraries for your C/ASM code into ROMs
-- build_Cartridge.bat will compile your code and build roms
-- testwithMAME.bat will launch your ROM with MAME
+- make (rom)				# compile the whole
+- make Install			# install for Windows
+- make gfx					# rebuild Graphics
+- make fix_gfx			# rebuild FIX rom
+- make clean				# remove temp files
+- make play         # launch MAME
 
 # latest updates (latest updates first)
-- initiated a simple makefile
+- Demo/Title modes APIs ok (that was the easy part)
+- initiated a simple makefile (not expert of make automation, but at least newbies can understand)
 - started to break the whole thing to include DATlib from HPman. This requires to change the make/build process (wip). Fix & C1/C2 files build process OK.
 - added NGFX tool for sprites/graphic/fix editing
 - dedicated MAME hash setup in order to test as a homebrew Rom, not as a puzzledp clone. Unfortunately this now makes the Sound driver crash for some reason (to be fixed later)
@@ -47,6 +51,10 @@ I'm now in the middle of adding DatLib in the whole package. I've had to remove 
 - NEO THUNDER modified game code (http://sebastianmihai.com/main.php?t=22)
 - Neo Builder v1.06 (https://www.terraonion.com/en/products)
 - 7zip (to Zipbin files in a ZIP rom, then convert into NeoSD format)
+
+# Questions
+- it this a game? I dont think SeaFighter repository will become a game. I will have to rename it to something like NeoGeo GameModes API.
+- is this a NeoGeo SDK ? no, just a library to create an abstraction layer between NeoGeo and your Game code for the Game modes. Hopefully it can work with the SDKs you know. I will work on it once (if) it works
 
 "NEOGEO" is a registered trademark of SNK Playmore Corp. All other company and product names used are trademarks or registered trademarks of their respective owners.
 The contents of this page are not authorized or licensed by SNK Playmore.
