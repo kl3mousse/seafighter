@@ -1,4 +1,4 @@
-#include <video.h>
+#include <DATlib.h>
 #include "background.h"
 
 // this determines how many hardware sprites are used for the background
@@ -10,7 +10,7 @@
 // our background, displayed on sprites 0-49
 //
 // const starfield_t bcksprites[50];
-// 
+//
 // Readme says this is a pitfall, and that it should be a const
 // the only difference I noticed was that when const is used, warnings are generated when
 // values are assigned to this array, so I'm leaving it as non-const for now
@@ -35,16 +35,16 @@ const int maximum_frame_of_spawn = 1600;
 void update_background(int frames)
 {
 	int i, j;
-	
+
 	for(i=FIRST_BCK_HARDWARE_SPRITE; i<MAX_BCK_HARDWARE_SPRITES; i++)
 	{
 		if(bcksprites[i].state == BCKSPR_STATE_ONSCREEN)
 		{
 			// first thing we do is shift all background sprites to the left by one pixel
 			bcksprites[i].x -= 0.5f;
-	
+
 			// then we see if any have reached an x of -16, which means they're now fully off-screen and can be
-			// freed up (or de-allocated, in a way)		
+			// freed up (or de-allocated, in a way)
 			if(bcksprites[i].x == -16.0f)
 			{
 				bcksprites[i].state = BCKSPR_STATE_NOTUSED;
@@ -57,7 +57,7 @@ void update_background(int frames)
 	// now we check to see if we're supposed to add new sprites for this frame
 	for(i=0; i<BCKSPR_ENTRY_COUNT; i++)
 	{
-		
+
 		if(bckspritespawn_frame[i] == frames)
 		{
 			//find first unused background sprite
@@ -70,7 +70,7 @@ void update_background(int frames)
 					bcksprites[j].x = 319.0f;
 					bcksprites[j].y = bckspritespawn_y[i];
 					bcksprites[j].tile = bckspritespawn_tile[i];
-					
+
 					// write sprite data too
 					set_current_sprite(j);
 					write_sprite_data((int)(bcksprites[j].x), bcksprites[j].y, 15, 255, 1, 1, (const PTILEMAP)&starfield[bcksprites[j].tile]);
@@ -89,13 +89,13 @@ void update_background(int frames)
 		{
 			change_sprite_pos(i, (int)(bcksprites[i].x), bcksprites[i].y, 1);
 		}
-	}	
+	}
 }
 
 void initialize_background()
 {
 	int i;
-	
+
 	for(i=FIRST_BCK_HARDWARE_SPRITE; i<MAX_BCK_HARDWARE_SPRITES; i++)
 	{
 		bcksprites[i].state = BCKSPR_STATE_NOTUSED;
@@ -108,7 +108,7 @@ void initialize_background()
 int background_sprites_onscreen()
 {
 	int i, count=0;
-	
+
 	for(i=FIRST_BCK_HARDWARE_SPRITE; i<MAX_BCK_HARDWARE_SPRITES; i++)
 	{
 		if(bcksprites[i].state == BCKSPR_STATE_ONSCREEN) count++;

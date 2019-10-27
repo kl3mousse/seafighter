@@ -21,6 +21,31 @@
 
 <softwarelist name="neogeo" description="SNK Neo-Geo cartridges">
 
+
+	<software name="DATdemo">
+		<description>DATlib sample program</description>
+		<year>2018</year>
+		<publisher>default45</publisher>
+		<sharedfeat name="release" value="MVS,AES" />
+		<sharedfeat name="compatibility" value="MVS,AES" />
+		<part name="cart" interface="neo_cart">
+			<dataarea name="maincpu" width="16" endianness="big" size="0x100000">
+				<rom loadflag="load16_word_swap" name="demo-p1.bin" offset="0x000000" size="0x080000" crc="2b61415b" sha1="0e3e4faf2fd6e63407425e1ac788003e75aeeb4f" />
+			</dataarea>
+			<dataarea name="fixed" size="0x040000">
+				<rom offset="0x000000" size="0x020000" name="demo-s1.bin" crc="cd19264f" sha1="531be2305cd56d332fb7a53ab924214ade34a9e8" />
+			</dataarea>
+			<dataarea name="audiocpu" size="0x020000">
+				<rom offset="0x000000" size="0x020000" name="demo-m1.bin" crc="9c0291ea" sha1="3fa67c62acba79be6b3a98cc1601e45569fa11ae" />
+			</dataarea>
+			<dataarea name="ymsnd" size="0x80000">
+				<rom name="demo-v1.bin" offset="0x000000" size="0x080000" crc="debeb8fb" sha1="49a3d3578c087f1a0050168571ef8d1b08c5dc05" />
+			</dataarea>
+			<dataarea name="sprites" size="0x2800000">
+			<rom loadflag="load16_word" name="char.bin" offset="0x000000" size="0x800000" crc="a9bdc000" sha1="93b0dfcd2121ddf6ea1fe99514a176d76e4b0c98" />
+			</dataarea>
+		</part>
+	</software>
 	<!--
 	ID-0444
 	. ??M-444
@@ -37,20 +62,19 @@
 		<sharedfeat name="compatibility" value="MVS,AES" />
 		<part name="cart" interface="neo_cart">
 			<dataarea name="maincpu" width="16" endianness="big" size="0x100000">
-				<rom loadflag="load16_word_swap" name="444-p1.p1" offset="0x000000" size="0x080000" crc="2b61415b" sha1="0e3e4faf2fd6e63407425e1ac788003e75aeeb4f" />   <!-- TC534200 -->
+				<rom loadflag="load16_word_swap" name="444-p1.p1" offset="0x000000" size="0x080000" crc="2b61415b" sha1="0e3e4faf2fd6e63407425e1ac788003e75aeeb4f" />
 			</dataarea>
 			<dataarea name="fixed" size="0x040000">
-				<rom offset="0x000000" size="0x020000" name="444-s1.s1" crc="cd19264f" sha1="531be2305cd56d332fb7a53ab924214ade34a9e8" />   <!-- TC531000 -->
+				<rom offset="0x000000" size="0x020000" name="444-s1.s1" crc="cd19264f" sha1="531be2305cd56d332fb7a53ab924214ade34a9e8" />
 			</dataarea>
 			<dataarea name="audiocpu" size="0x020000">
-				<rom offset="0x000000" size="0x020000" name="444-m1.m1" crc="9c0291ea" sha1="3fa67c62acba79be6b3a98cc1601e45569fa11ae" />   <!-- TC531001 -->
+				<rom offset="0x000000" size="0x020000" name="444-m1.m1" crc="9c0291ea" sha1="3fa67c62acba79be6b3a98cc1601e45569fa11ae" />
 			</dataarea>
 			<dataarea name="ymsnd" size="0x80000">
-				<rom name="444-v1.v1" offset="0x000000" size="0x080000" crc="debeb8fb" sha1="49a3d3578c087f1a0050168571ef8d1b08c5dc05" />   <!-- TC534200 -->
+				<rom name="444-v1.v1" offset="0x000000" size="0x080000" crc="debeb8fb" sha1="49a3d3578c087f1a0050168571ef8d1b08c5dc05" />
 			</dataarea>
-			<dataarea name="sprites" size="0x200000">
-				<rom loadflag="load16_byte" name="444-c1.c1" offset="0x000000" size="0x100000" crc="cc0095ef" sha1="3d86f455e6db10a2449b775dc386f1826ba3b62e" />    <!-- TC538200 -->
-				<rom loadflag="load16_byte" name="444-c2.c2" offset="0x000001" size="0x100000" crc="42371307" sha1="df794f989e2883634bf7ffeea48d6bc3854529af" />    <!-- TC538200 -->
+			<dataarea name="sprites" size="0x800000">
+         <rom loadflag="load16_word" name="char.bin" offset="0x000000" size="0x800000" crc="a9bdc000" sha1="93b0dfcd2121ddf6ea1fe99514a176d76e4b0c98" />
 			</dataarea>
 		</part>
 	</software>

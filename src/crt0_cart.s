@@ -1,59 +1,145 @@
-* $Id: crt0_cart.s,v 1.2 2001/04/13 10:05:56 fma Exp $
-
 ********************* Vector Definitions *********************
-IRQ1			= _irq1_handler
-IRQ2			= _irq2_handler
-IRQ3			= _irq3_handler
-DUMMY			= _dummy_exc_handler
-TRAP00			= _dummy_exc_handler
-TRAP01			= _dummy_exc_handler
-TRAP02			= _dummy_exc_handler
-TRAP03			= _dummy_exc_handler
-TRAP04			= _dummy_exc_handler
-TRAP05			= _dummy_exc_handler
-TRAP06			= _dummy_exc_handler
-TRAP07			= _dummy_exc_handler
-TRAP08			= _dummy_exc_handler
-TRAP09			= _dummy_exc_handler
-TRAP10			= _dummy_exc_handler
-TRAP11			= _dummy_exc_handler
-TRAP12			= _dummy_exc_handler
-TRAP13			= _dummy_exc_handler
-TRAP14			= _dummy_exc_handler
-TRAP15			= _dummy_exc_handler
-ENTRY_POINT1	= _start
-ENTRY_POINT2	= _dummy_config_handler
-ENTRY_POINT3	= _dummy_config_handler
-ENTRY_POINT4	= _dummy_config_handler
+_IRQ1	=	DAT_TIfunc
+_IRQ2	= 	DAT_vblankTI
+_IRQ3	=	_irq3_handler
+_ENTRY_USER	= _entry_user
+_ENTRY_PLAYER_START	= _entry_player_start
+_ENTRY_DEMO_END	= _entry_demo_end |; MVS game switch
+_ENTRY_COIN_SOUND	= _entry_coin_sound |; coin sound
 
 ************************ Definitions *************************
-CDDA_FLAG 		= 0
-GUID			= 0x1234
-DEBUG_DIPS		= 0x10E000
-LOGO_START		= 0x02	/*;eye catcher (0-common 1-custom 2-off)*/
+_NGH = 0x5555
+_PROGRAM_SIZE	=	0x00100000
+_WRK_BCKP_AREA = bkp_data
+_WRK_BCKP_AREA_SIZE = 0x0100	|;256bytes
+_EYE_CATCHER = 0x02	/*;eye catcher (0-common 1-custom 2-off)*/
+_EYE_CATCHER_TILES = 0x01 /*;eye catcher start tiles (upper bits, 0x01 => 0x0100)*/
 
-	.include	"./include/NeoDev/src/system/common_crt0_cart.s"
+.include "./src/common_crt0_cart.s"
 
 * Names MUST be 16 characters long
 *           <---------------->
-_jp_config:
-	.ascii	"SPRITE TEST JP  "
-	.long	0xFFFFFFFF
-	.word	0x0364
-	.byte	0x14, 0x13, 0x24, 0x01
+JPConfig:
+ 	.ascii	"GAME-TITLE-JP---"
 
-_us_config:
-	.ascii	"SPRITE TEST US  "
-	.long	0xFFFFFFFF
-	.word	0x0364
-	.byte	0x14, 0x13, 0x24, 0x01
+  	.byte	0x10 /* PLAY TIME, default 10 min */
+  	.byte	0x00 /* PLAY TIME, default  0 sec */
+  	.byte	0x00 /* CONT.TIME, default  0 min */
+  	.byte	0x10 /* CONT.TIME, default 10 sec */
+ 	.byte	0x05 /* LIVES 99 max, default 5 */
+ 	.byte	0x64 /* CONTINUES 01-63, infinite=64, without=00, default 64 */
 
-_sp_config:
-	.ascii	"SPRITE TEST SP  "
-	.long	0xFFFFFFFF
-	.word	0x0364
-	.byte	0x14, 0x13, 0x24, 0x01
+ 	.byte	0x38 /* DIFFICULTY, 8 options, 3 default*/
+ 	.byte	0x02 /* DEMO SOUND, 2 options, 0 default*/
 
-	.align	4
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+  	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
 
-	.end
+ 	.ascii	"PLAY TIME   "
+ 	.ascii	"CONT.TIME   "
+ 	.ascii	"LIVES       "
+ 	.ascii	"CONTINUES   "
+
+ 	.ascii	"DIFFICULTY  "
+ 	.ascii	"LEVEL 1     "
+ 	.ascii	"LEVEL 2     "
+ 	.ascii	"LEVEL 3     "
+ 	.ascii	"LEVEL 4     "
+ 	.ascii	"LEVEL 5     "
+ 	.ascii	"LEVEL 6     "
+ 	.ascii	"LEVEL 7     "
+ 	.ascii	"LEVEL 8     "
+
+ 	.ascii	"DEMO SOUND  "
+ 	.ascii	"WITH        "
+ 	.ascii	"WITHOUT     "
+
+USConfig:
+	.ascii	"GAME-TITLE-US---"
+
+  	.byte	0x10 /* PLAY TIME, default 10 min */
+  	.byte	0x00 /* PLAY TIME, default  0 sec */
+  	.byte	0x00 /* CONT.TIME, default  0 min */
+  	.byte	0x10 /* CONT.TIME, default 10 sec */
+ 	.byte	0x05 /* LIVES 99 max, default 5 */
+ 	.byte	0x64 /* CONTINUES 01-63, infinite=64, without=00, default 64 */
+
+ 	.byte	0x38 /* DIFFICULTY, 8 options, 3 default*/
+ 	.byte	0x02 /* DEMO SOUND, 2 options, 0 default*/
+
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+  	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+
+ 	.ascii	"PLAY TIME   "
+ 	.ascii	"CONT.TIME   "
+ 	.ascii	"LIVES       "
+ 	.ascii	"CONTINUES   "
+
+ 	.ascii	"DIFFICULTY  "
+ 	.ascii	"LEVEL 1     "
+ 	.ascii	"LEVEL 2     "
+ 	.ascii	"LEVEL 3     "
+ 	.ascii	"LEVEL 4     "
+ 	.ascii	"LEVEL 5     "
+ 	.ascii	"LEVEL 6     "
+ 	.ascii	"LEVEL 7     "
+ 	.ascii	"LEVEL 8     "
+
+ 	.ascii	"DEMO SOUND  "
+ 	.ascii	"WITH        "
+ 	.ascii	"WITHOUT     "
+
+EUConfig:
+ 	.ascii	"GAME-TITLE-EU---"
+
+  	.byte	0x10 /* PLAY TIME, default 10 min */
+  	.byte	0x00 /* PLAY TIME, default  0 sec */
+  	.byte	0x00 /* CONT.TIME, default  0 min */
+  	.byte	0x10 /* CONT.TIME, default 10 sec */
+ 	.byte	0x05 /* LIVES 99 max, default 5 */
+ 	.byte	0x64 /* CONTINUES 01-63, infinite=64, without=00, default 64 */
+
+ 	.byte	0x38 /* DIFFICULTY, 8 options, 3 default*/
+ 	.byte	0x02 /* DEMO SOUND, 2 options, 0 default*/
+
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+  	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+ 	.byte	0x00 /* UNUSED OPTION CATEGORY */
+
+ 	.ascii	"PLAY TIME   "
+ 	.ascii	"CONT.TIME   "
+ 	.ascii	"LIVES       "
+ 	.ascii	"CONTINUES   "
+
+ 	.ascii	"DIFFICULTY  "
+ 	.ascii	"LEVEL 1     "
+ 	.ascii	"LEVEL 2     "
+ 	.ascii	"LEVEL 3     "
+ 	.ascii	"LEVEL 4     "
+ 	.ascii	"LEVEL 5     "
+ 	.ascii	"LEVEL 6     "
+ 	.ascii	"LEVEL 7     "
+ 	.ascii	"LEVEL 8     "
+
+ 	.ascii	"DEMO SOUND  "
+ 	.ascii	"WITH        "
+ 	.ascii	"WITHOUT     "
+
+ 	.end

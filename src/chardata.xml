@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chardata>
+  <setup>
+    <starting_tile>256</starting_tile>
+	  <charfile>gfxout\char.bin</charfile>
+    <mapfile>gfxout\charMaps.s</mapfile>
+    <palfile>gfxout\charPals.s</palfile>
+    <incfile>gfxout\charInclude.h</incfile>
+	<incprefix>../</incprefix>
+  </setup>
+  <pict id="seafighterh02">
+    <file>gfx\fighter_hugo_02.png</file>
+    <flips>xyz</flips>
+  </pict>
+  <pict id="demomode_seafighter_title">
+    <file>gfx\demomode_01.png</file>
+  </pict>
+  <pict id="ffbg_c">
+    <file>gfx\ffbg_c.png</file>
+  </pict>
+  <pict id="terrypict">
+    <file>gfx\terry_portrait_.png</file>
+    <flips>xyz</flips>
+  </pict>
+  <pict id="desert">
+    <file>gfx\desert.png</file>
+  </pict>
+  <pict id="topleft">
+    <file>gfx\topleft.png</file>
+    <flips>xyz</flips>
+  </pict>
+  <pict id="pointer">
+    <file>gfx\pointer.png</file>
+  </pict>
+  <pict id="dbgTags">
+	<file>gfx\debugtags.png</file>
+  </pict>
+  <pict id="gradient">
+    <file>gfx\colorbars.png</file>
+  </pict>
+  <pict id="tf4layers">
+    <file>gfx\tf4layers.png</file>
+  </pict>
+</chardata>

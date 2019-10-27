@@ -10,9 +10,13 @@ ENTRY(_start)
 
 MEMORY
 {
-  roma (rx) : ORIGIN = 0x00000000, LENGTH = 0x100000
+  /*roma (rx) : ORIGIN = 0x00000000, LENGTH = 0x100000
   ram (rwx) : ORIGIN = 0x00100000, LENGTH = 0xE000
   romb (rx) : ORIGIN = 0x00110000, LENGTH = 0xF0000
+  */
+  roma (rx) : ORIGIN = 0x00000000, LENGTH = 0x100000
+  ram (rwx) : ORIGIN = 0x00100000, LENGTH = 0xF000
+  romb (rx) : ORIGIN = 0x00200000, LENGTH = 0x100000
 }
 
 SECTIONS
