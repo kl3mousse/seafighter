@@ -10,7 +10,7 @@ The game is not working anymore, need to work on it.
 
 ![https://img.shields.io/badge/buildpack-gcc%20for%20win10-blue.svg]()
 
-*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Blastar, Vasiliy Familiya, Smkdan, Chris Covelln NeoHomebrew...) for the assets & examples :)*
+*Thanks to the neogeo scene (Sebastian Mihai, HPman, Furrtek, dciabrin, freem/AJ, Blastar, Vasiliy Familiya, Smkdan, Chris Covelln, city41, NeoHomebrew...) for the assets & examples :)*
 
 # key programs
 - make (rom)				# compile the whole
@@ -18,9 +18,15 @@ The game is not working anymore, need to work on it.
 - make gfx					# rebuild Graphics
 - make fix_gfx			# rebuild FIX rom
 - make clean				# remove temp files
-- make play         # launch MAME
+- make play         # launch MAME with Unibios 3.3
+- make play-aes     # launch MAME in AES mode
+
+# todo / doing
+- AES game modes
+- MVS game modes
 
 # latest updates (latest updates first)
+- added bios for AES + some cleaning in project files
 - Demo/Title modes APIs ok (that was the easy part)
 - initiated a simple makefile (not expert of make automation, but at least newbies can understand)
 - started to break the whole thing to include DATlib from HPman. This requires to change the make/build process (wip). Fix & C1/C2 files build process OK.

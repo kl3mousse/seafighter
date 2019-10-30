@@ -211,17 +211,6 @@ void USER(void)
 			ngsdk_titlemode(1, flash_timer, title_timer, dev_mode, creditsP1, USmode, creditsP2);
 		}
 
-
-
-
-
-
-
-
-
-
-
-
 		// TITLE MODE AES ////////////////////////////////////////////////////////////////////////////////////////
 		// the AES title mode is also used by MVS in "free play" mode (hard dip switch 6 active)
 
@@ -255,6 +244,18 @@ void USER(void)
 				clearFixLayer();	// clear title screen
 			}
 		}
+
+
+
+
+
+
+
+
+
+
+
+
 
 		// GAME MODE AES /////////////////////////////////////////////////////////////////////////////////////////
 		//  the AES title mode is also used by MVS in "free play" mode (hard dip switch 6 active)
@@ -485,6 +486,12 @@ void USER(void)
 				break; // exit loop and call BIOSF_SYSTEM_RETURN (will restart demo mode)
 			}
 		}
+
+
+
+
+
+
 
 		// GAME MODE MVS /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1036,4 +1043,10 @@ void ngsdk_titlemode(int isMVSorAES, int flash_timer, uchar title_timer, uchar d
 
   // insert your game title code here:
 	ngTitleModeLoop(isMVSorAES, flash_timer, title_timer, dev_mode, creditsP1, USmode, creditsP2);
+}
+
+////////////////////////////////////////////////////////////////////////
+// NeoGeoSDK (MVS?) GAME mode
+void ngsdk_gamemode(){
+
 }

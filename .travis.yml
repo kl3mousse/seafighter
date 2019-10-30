@@ -1,4 +1,0 @@
-os: windows
-language: c
-install: make install
-script: make test

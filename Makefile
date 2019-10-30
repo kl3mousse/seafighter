@@ -29,7 +29,10 @@ test: main_pgm
 # Play using MAME
 #######################################
 play:
-	testwithMAME.bat
+	play-MVS-with-MAME.bat
+
+play-aes:
+	play-AES-with-MAME.bat
 
 #############################################
 # Install: set proper Windows env. variables
@@ -58,6 +61,23 @@ main_pgm:
 	del dev_p1.rom
 	del test.o
 	mv 444-p1.bin output\cartridge
+
+	del /Q tools\MAME\roms\seafight\*.*
+	copy "output\cartridge\*.bin" "tools\MAME\roms\seafight\"
+	copy gfxout\char.bin tools\MAME\roms\seafight\char.bin
+
+#	del tools\MAME\roms\seafight\*.c*
+#	del tools\MAME\roms\seafight\*.m*
+#	del tools\MAME\roms\seafight\*.p*
+#	del tools\MAME\roms\seafight\*.s*
+#	del tools\MAME\roms\seafight\*.v*
+
+	ren tools\MAME\roms\seafight\444-c1.bin 444-c1.c1
+	ren tools\MAME\roms\seafight\444-c2.bin 444-c2.c2
+	ren tools\MAME\roms\seafight\444-m1.bin 444-m1.m1
+	ren tools\MAME\roms\seafight\444-p1.bin 444-p1.p1
+	ren tools\MAME\roms\seafight\444-s1.bin 444-s1.s1
+	ren tools\MAME\roms\seafight\444-v1.bin 444-v1.v1
 
 #######################################
 # NEOGEO GRAPHIC ROMS
