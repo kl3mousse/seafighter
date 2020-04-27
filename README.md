@@ -26,6 +26,7 @@ The game is not working anymore, need to work on it.
 - MVS game modes
 
 # latest updates (latest updates first)
+- some doc about NeoGeo game mode functions
 - added bios for AES + some cleaning in project files
 - Demo/Title modes APIs ok (that was the easy part)
 - initiated a simple makefile (not expert of make automation, but at least newbies can understand)
@@ -61,6 +62,14 @@ The game is not working anymore, need to work on it.
 # Questions
 - it this a game? I dont think SeaFighter repository will become a game. I will have to rename it to something like NeoGeo GameModes API.
 - is this a NeoGeo SDK ? no, just a library to create an abstraction layer between NeoGeo and your Game code for the Game modes. Hopefully it can work with the SDKs you know. I will work on it once (if) it works
+
+# functions defined in nggame.c
+- ngMVSGameInstallOnce(): run on MVS when the game is to be installed. Usually once per MVS, to setup high scores.
+- ngUserModeInit(): launched when User mode is set
+- ngDemoModeLoop(): called while Demo mode is running
+- ngTitleModeLoop(): called while Title mode is runnung
+- ...more to come
+
 
 "NEOGEO" is a registered trademark of SNK Playmore Corp. All other company and product names used are trademarks or registered trademarks of their respective owners.
 The contents of this page are not authorized or licensed by SNK Playmore.
